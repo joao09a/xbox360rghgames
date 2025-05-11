@@ -124,14 +124,120 @@
 
     <div id="movie-section">
         <h2>Filmes Disponíveis</h2>
-        <div class="movie-buttons">
+        
+<input type="text" id="searchInput" placeholder="Buscar filme..." style="padding: 10px; width: 80%; max-width: 400px; font-size: 16px; border-radius: 5px; border: none; margin-bottom: 20px;">
+
+<div class="movie-buttons">
             <button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf_fs4nFTSvRPwD_2vhdIO8C0rgWNcjFdZDQt4YtoFlnFg')">O Retorno do Rei</button>
             <button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf8L2Ly-UgQS69rpYIFvY9AJI_sSvpvszhPQysxmu5nRzA')">Jurado Nº2</button>
             <button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf90qRJW2KgpHeR0-HcvnzYWpmQyLOiiOyzKCvboz1xhaA')">A Virgem Vermelha</button>
             <button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf-ZT9_q_dZOuTiyWws1n61AGapgdvPK0cooB0Ms6dAdpA')">Moana 2</button>
             <button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf8QIm2lDqdpGBuVL9xjT24HNgRXd4hzGL3-MJM46YAJ4Q')">Terror em Crescent City</button>
             <button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf99vI2Fnqq__kjwWpDMTwH-fjYVLZAI7URCtnEtr_NNWQ')">O Último Hotel</button>
-        </div>
+             <button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf98dQW9W0wvStSYj_K9WZoEZinFlXaEDsdsdpyWMY3UiQ')">Desbravadores (2007)</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf-T1_ud5tJviCR1xp7qvGvu5l8kJGCCRGUf_nsOlPhFvQ')">Sete Minutos Depois da Meia-Noite (2016)</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf_sGWsAoD2dA0t5WpxOEH-gUMUfwN0FJz3wY4HNGTS2dA')">A Caminho de Casa (2019)</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf855zmjrD9qUk-Cqw51LWkCjgQvymqF1RfVZF5ebPVYxA')">Muleque Té Doido 3: Mais Doido Ainda! (2019)</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf-GlUPCcm6g--veyyhkhkiRZnJAsn48t4h2tIRYJsJCbQ')">O Grande (1956)" tvg-logo="http://64.31.43.190:80/images/61eb3690a522f5068cbf4a09fca6fc84.jpg" group-title="♠️Filmes | Aventura",Alexandre, O Grande (1956)</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf8ZLbxB9ete6tXZmOp11GfUrrXuWskI1ernI8YeEHGRnw')">A Bússola Mágica (2023)</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf8i8DSLzrfsGo9eio8CGe6gv-yEB7e95QkP-9xjbXt2kQ')">Duelo de Espiões (2022)</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf-EMyjcBLPqT8qs1gqQrzAs4NbAbf5xNCrUGVdTylUHVA')">Barbie (2023)</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf_lRG-vpO_Hr154q38w1HLH75omG3Q_5glO683mNKbf2w')">Um Mundo Encantado (2020)</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf9HkfuMyWGEnl2PR9TskO2yvN6GjZ2cK1odNUwuBlFTiA')">Slime - Uma Aventura Pegajosa (2020)</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf8EbqOw-owO4hlv8VEtNLlySq_HDZK65lnrJNkb9gctkA')">O Menino e o Mestre (2024)</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf8ug-WNIqT7OrMoX9vsu6fhnwUWRoFmr3dyv9W3h-1--w')">Uma e Haggen: Mitos (2024)</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf_cCjpYnRm4OOcsoIRLBCtrihNBI22FGPijW8lVNTeNTA')">A Arca de Norman (1998)</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf9-n6vcL39ukSVe4H8s2Lxe2pDLKcigS8Tj61JHBpHxew')">Fúria de Titãs (1981)</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf-IaSRQ4TSQAdzRtNrjh5EJQuR1r08XZssvxvyLP9xuiw')">Gladiador 2 (2024)</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf9_iVbgPMLsz3hM96KGEV57aXnQngYGIUW6kKW92uil9A')">Os Caçadores da Biblioteca Perdida (2022)</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf_DwsI6GbAO_7JGgIxUgDFkFzu6QK4E9e4fRpGLkRbzFA')">Sparkle: Um Conto Mágico (2023)</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf9K1Jnk9cDtuVd-szLfs7uiLgpV6a63ckmrI-yKYe5JHw')">Alice Através do Espelho (2016)</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf-qrEXUQEMBUW_pT8WgQbx_DEi3dsh5cjG8u_PCM8UkNg')">A Batalha dos 3 Reinos - Parte 2 (2009)</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf-PyokXhuSRX0rxFSg_JKbX6yr3Rnc85bfbSpshI-taNA')">A Onda dos Sonhos 2 (2011)</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf8eE0kYutOes_hP2LglKxblkmNYM9mrmVOShPZmjnzIBw')">Cidade das Sombras (2008)</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf88ff_dS13CRgII0jtKjHc4JqLnq8paLkCeICynt_47kg')">Ember Cidade das Sombras (2008)</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf8b4zSnSYZ5cvSGd_G5o0M0QN6zxvP9rng-IvGcenB09g')">Anjos Rebeldes (1995)</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf-mPmdNqaGpg41fNWLmVxN_5MRRWzrlVZh1KJ9vsWza9Q')">Anjos Rebeldes 2 (1998)</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf_QDb4s2UQu0LSCG3M9PnqpxX9k0mYPjr-uJhf47X3P6Q')">Anjos Rebeldes 3: O Ascendente (2000)</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf83hW8NNFy3OzFvo9Ll8O_7YM4UgMip4_TklV4OTfQTpg')">Uma Noite Mágica (1998)</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf9dZWD6rseJE8WXI0qjjv51WSX2UrzG9Vaj0PBdeQaI-g')">Branca de Neve (2001)</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf8RkO-BJ1Iy3bF56YIfDzvvytgnhDCAR3c1fMmJ8ptrWA')">Cidade das Sombras (2008)</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf_KxEa816KDuvZO8Cy2bqwxn3CAqWLf7ewp7yQPCiFM8w')">Branca de Neve (2001)</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf8tTqOU2LPCEUAnWiQwfmcy0m1pcrX5RVEDtNZaEv2SMw')">Branca de Neve e Os Sete Anões (1987)</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf9pnB2fN3uNi47U1tBO3yUCNlZtKiGxLwB0biIHbPdNBg')">Branca de Neve e os Sete Anões 1938 (1938)</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf9EUgc_v-JHc_TyJ9H11iFwDKC8lzvqhcSDq5mEAXikzA')">Ember Cidade das sombras (FULLHD) (2008)</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf8-BnQ4M1TDo-e6HWwHqnkC4eflb_9sWWdfBsbtiJwhSg')">Confissões de Adolescente (2014)</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf_L_jf1iMrFz7NGl7gOeXAIsbL7Nr9FePDssCzvkN0XXA')">Crimes em Happytime (2018)</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf-UDC-8PTmunoEskWZyBUpGKIQ7L5v7cL1cVZbxfWM9VQ')">Nosso Amigo Extraordinário (2023)</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf8W1cBdqq4jG1909c3JknkACiqABV7_FSXrKm_KA_XZ8Q')">A Vida Marinha com Steve Zissou (2004)</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf_1jjbeyy2ENx4qQzvEGAHxPIJ853-NoghDu1o1jCLTew')">Viagem a Darjeeling (2007)</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf9U4MpZcKHdYTdprsXoLBiRdpCrsSVEtiInmmh_axw_1w')">Super Mario Bros. (1993)</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf_SiaMhTQP5wy41R7BkGkMnAi-LBNb47QewEvcI1rd-Hw')">Montanha Gelada (2003)</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf9p6RZCVos3_Fze6L5l2mLwBqN3kz4gy33R0ED0i7iDlg')">Foxter & Max: Um Cachorro de Outro Mundo</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf_LPE3Vrlu0oXsAGQ8Eskpt7rW7GS7C6k9DKhL1YhKEtg')">Um Mundo Encantado</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf9jRBO8u2qIopYk3nXXnhK7KS3ASxV-64-0qmzjPnuqAQ')">Slime - Uma Aventura Pegajosa</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf_2Ensc_87vJXSJfCdY8o2YmLMVK8QgrO8a5zgEHsR_2g')">Em Busca do Anel Perdido</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf8VrYrWBWlXclZ4lYKFnWWkEKHJu0yQ5nA8mlT_y2yHFQ')">Coração de Tinta: O Livro Mágico</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf9dxM87MxOLFwm_0Xi61wLoY1fIj3uZ4ZppiMF3E4Qchg')">O Clube do Tesouro</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf-Xkgcgj4qmS-eEPqeO_w9ab8UM_98g5pgDeOmMME7SrQ')">Osmose Jones - Uma Aventura Radical pelo Corpo Humano</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf8-S5AcwTbTkZrnupa-XhlVuCVDkVJoT1vUctF10dMMPg')">Em Busca do Barco Perdido</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf8adT0jdL4L0uCKOj7FqO6vnuOW1WyUsk9DU5qzuR2nlQ')">O Fantástico Sr. Raposo</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf_AhqaZ3Z4BU20bdaH4wLHu2lJtOL-e0QK7H8wPIfKb5A')">O Mágico de Oz</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf-l63USiMwnJu0Nl947Ah3ORa5FHLx_A5CMf3xd4NA90g')">Charlie: Um Cachorro Especial</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf9m8r8mccrYVzYIFZ6axMODP1IrBFyYZGqHL_fBHoDe6w')">A Múmia</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf8bSxYNwdfVWbuAD3IyraKBtEOEbU_H6wiaPPHoL1Mzvg')">Bruno e o Lobo</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf9CG6YvC8Sq8GZZHfPtHjYgCraKiU2KHiPsYMER4pfEwQ')">Indiana Jones e A Relíquia do Destino</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf8DqgYQC5r7MuxJAUMiNYxl-KO0Ov_NQAc0UP5lhrE26w')">Travessuras de Natal</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf-D9p2z6DSc8nqPMsG-Gd-3-2hxwVp9xhXFWFFCmfYGbQ')">O Rei da Montanha</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf9O39sQdlapPyFntte1Jv_ciaqCfCxxloFKlC9Ko-eZOA')">Jim Knopf e os 13 Piratas</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf9nXKEWI0AOURTqcWAubyI8TnJkVcJmiHdXcEqG-0eFzA')">Aladdin (2019)</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf9rsOhSVqat8y4SXB6rREj-I8lnizQ8xs0IV84Q0kEzOw')">A Flauta Mágica</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf_GtVnX760D_UuqVCDUGjlzEY102405IUiwF4ZuAknDYA')">Aventura em Legacy Peak</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf_arJVQrGHYBrfCSQOTJK_gIA0Rj153OvD241E4Fkcx7w')">Arthur e a Vingança de Maltazard</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf_WPIKcfkeDn7b69r64TE9kK3j7ImrMhGxJRefZe5lqxA')">Arthur e os Minimoys</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf90JCCL6pcyqHx0sy7Z_NuQkCYcxnkIgUuCyT8cGR5nJA')">Em uma Terra Muito Distante… Havia um Crime</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf-3cRJcBrH9Lh62tprCirPGSFSM-EhqnBHRb7HrUzaYWw')">A Pequena Sereia</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf-47EJ1BtS7_9AzaKIAiN7wcBdasGwz5eNwAQthpMBkxg')">Sr. Carrinho e os Cavaleiros Templários</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf9an_KKerZ9JEvV6zpBd0_Cs_3IDhfWl_DkqeCWZXzx_g')">Minha Babá é uma Vampira: O Filme</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf9sE3JrN3VkzQLFpwQ9XWcklIDm-y_78rUKUCHoC8qU7w')">Uma Viagem Extraordinária</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf9qcYMc9-Hx1IxQA4hMGCmukL_H6cOnSBWo_cLPY9Y9sg')">Scooby-Doo: O Filme</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf9IUhV8DxkpzK0Wg90c9wIvgM_nCVP9X3AxTFUrVYMpkQ')">A Menina Invisível</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf_RsKd8A46FIAR38jz-J8wlq19DSBHQFbM2-kzR--Qr4g')">Dungeons & Dragons: Honra Entre Rebeldes</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf8fDgBmT4liZQHsizod5wbsCT0h3cF1dSE8uCDSOaZ12A')">A Cidade Dourada</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf8u7Xq2a-MYM6a-Zd7u7YUG1jWTrbagB5kNhcy-rzONmw')">Os Reis da Rua Mulberry: Que Reine o Amor</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf8vcTFdRoafJ2s8DJq0xrfdoL2vI3EuRcjG_fN08FESQQ')">Meu Amigo Lutcha</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf8b6LHu6sNj3Q8UPgLkdsD5Lhm7mj6kF8Nuv4TWWZsGhA')">Tempestade</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf-lZ4rWlQzIa3WOWV4fXYfqlVe4Pg9oO302RkDPSLJUPQ')">Fantasma e CIA</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf8YDuYsDK9UTf_gBgFkcjcB9Zalj373vS2yd_RFNXMgtA')">Destemida</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf-YuCNKb3i69F21qosBmd2SK9iFl5M7_S2XG2J2GChvMg')">Uma Jornada Mágica</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf-BxUusOnq--Pq37NKgseGA97YiIrz3rCzvBKi4cMSrMQ')">As Aventuras de Tadeo e a Tábua de Esmeralda</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf--pb_Xg1uhc-QdVKs0LCBUz6FhVB1CScnKWEJCW5Oaag')">Scooby-Doo! Gostosuras ou Travessuras</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf8d3BRRPZjIj8cQ1mgpLc189KR-KWocFq0bB3mbqqhY5w')">John e o Potrinho Mágico</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf8TfxIB6A15xQRAg6shlF5CIzAMbmoSrKuh2i8m8-GfSg')">Acampamento Intergaláctico</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf_x8xyAftUn3gjAqHmSqgaIcgSl2SnDXk5p_NT9Wro_aw')">Lassie de Volta a Casa</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf_SCA7-d1jt5BEAJYRBGCcATnJGOc5Rrfga4lx50SCr6Q')">Jim Knopf e Lucas: O Maquinista</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf_iDvp9m2GeG-qEpzehQjzpc5qr5uy93qMJnCNaOKb7ZA')">A Maldição de Bridge Hollow</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf92R-4533dN7uJ5CxPBHXS8X_A7fSdnDvfeVUDNj2vXVQ')">Monster High: O Filme</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf826ErlBBMi_Qzuyy-0yRdyS3dkFIHGGbVhIMmiqUXC8A')">a Menina Chamada Passarinha</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf-tIEaY_gEGlNTKLt7JEXyj1l5octJg3WfrygloJcUyFA')">A Fera</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf_jsCUiQ_sO3W-034kX350nW_pH0dQsxnVF1BEXa6RI5w')">Princesa por Acidente</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf8kEYfWrCFsXGhbgXZloKwCT-t1C_nMBZzV1Mz2AgxECg')">Alice no Mundo da Internet</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf9Cdw_2Pg7OFWNugM9hgfGiTZqSiDva3H1ejzoY_LWQRg')">Kaamelott: Parte 1</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf_zRUYzmjlSYxkB0HnF9sD44sHSYbpduPIOxUHEBlGaRA')">A Lenda do Cavaleiro Negro</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf9WQnFhXCTZUaxSRF1U6x2NRLhLbh3LFKc20AkrM05e0w')">Passagem Secreta</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf_yWhIze2lo6WWEhTH7C53mmdzz7NFdThIiofmpMhnxdg')">Jurassic World: Domínio</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf-4bn6Ec19vzD-PT4h6z_p_sZfCKUdlUhma11KUGBHktA')">A Irmandade do Dragão</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf_tKMMVxKQaGbGDnof3OzlEdpDuzhPy3IkbiVwM6DGLYA')">Uma Tia da Pesada</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf8r9SVOCe8rN2bcqWv0Ny3EUSToolMLm3KsQEhNIqSbqA')">Arthur & Merlin: Cavaleiros de Camelot</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf9NCZD49YSHuON5SP6EmJbuCz8lj0JFIuc1_cYfRPOWTw')">King - Meu Melhor Amigo</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf8aDKwqlNhiW2GvhOPrRFkCIzAGa_TB9NIWxETK62oJgA')">Capitã Nova</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf8Ro6tELA_765KpgURZoo4h_mZ7Lk1KgEWrYdeOCBR7Nw')">9: A Salvação</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf-sZ-molq4LNmPOPpNFB8J1-HYzlha7mi661eaXzKOsEg')">Meu Cachorro é um Robô</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf8RDQDsEwilDJyHEkvTgIflJGMJc2SW_aeI7a5kXvsepg')">A Mensageira (2019)</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf-9wneEPgZr5HJNFUBbTtonHeC_2pL2in1Z778xSfLzsw')">Nas Terras Perdidas 2025 (2025)</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf9QTexM56HS_9cQqKrv2Td_Ht8Kxk3mMVOXV3YkrxGPOw')">A Origem do Dragão (2017)</button>
+<button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf8dI9-p9wgMF2s7t0FDgVOatvyXd2DUB15y-XY2vIXPpg')">Heróis: Push - Os Poderosos (2009)</button>
+</div>
         <video id="movie-player" controls></video>
     </div>
 
@@ -155,6 +261,16 @@
         setInterval(updateDateTime, 1000);
         updateDateTime();
 
+    document.getElementById('searchInput').addEventListener('input', function () {
+        const query = this.value.toLowerCase();
+        const buttons = document.querySelectorAll('.movie-buttons button');
+        buttons.forEach(button => {
+            const title = button.textContent.toLowerCase();
+            button.style.display = title.includes(query) ? 'inline-block' : 'none';
+        });
+    });
+
+
         document.querySelector('.movies').addEventListener('click', () => {
             document.getElementById('movie-section').style.display = 'flex';
         });
@@ -166,4 +282,4 @@
         }
     </script>
 </body>
-</html>
+    </html>                            
