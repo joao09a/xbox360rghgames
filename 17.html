@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JEFT Smarters</title>
+    <style>
+        body {
+            margin: 0;
+            background: #000;
+            font-family: Arial, sans-serif;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: url('https://images.unsplash.com/photo-1563178405-b2efaa1b5199?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1920') no-repeat center center fixed;
+            background-size: cover;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 90%;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+        }
+
+        .menu {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+            width: 90%;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .menu button {
+            flex: 1 0 150px;
+            padding: 20px;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .menu button:hover {
+            opacity: 0.8;
+            transform: scale(1.05);
+        }
+
+        .live { background: #16a085; }
+        .movies { background: #e74c3c; }
+        .series { background: #9b59b6; }
+        .catchup { background: #f39c12; }
+        .multi { background: #3498db; }
+        .settings { background: #2c3e50; }
+
+        #movie-section {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 30px;
+            width: 90%;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        #movie-section h2 {
+            margin-bottom: 15px;
+        }
+
+        .movie-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .movie-buttons button {
+            padding: 10px 15px;
+            background-color: #e74c3c;
+            border: none;
+            border-radius: 5px;
+            color: #fff;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .movie-buttons button:hover {
+            opacity: 0.8;
+        }
+
+        video {
+            margin-top: 20px;
+            width: 640px;
+            max-width: 100%;
+            background: #000;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div>JEFT SMART</div>
+        <div id="datetime"></div>
+    </div>
+
+    <div class="menu">
+        <button class="live">LIVE TV</button>
+        <button class="movies">MOVIES</button>
+        <button class="series">SERIES</button>
+        <button class="catchup">CATCH UP</button>
+        <button class="multi">MULTISCREEN</button>
+        <button class="settings">SETTINGS</button>
+    </div>
+
+    <div id="movie-section">
+        <h2>Filmes Disponíveis</h2>
+        <div class="movie-buttons">
+            <button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf_fs4nFTSvRPwD_2vhdIO8C0rgWNcjFdZDQt4YtoFlnFg')">O Retorno do Rei</button>
+            <button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf8L2Ly-UgQS69rpYIFvY9AJI_sSvpvszhPQysxmu5nRzA')">Jurado Nº2</button>
+            <button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf90qRJW2KgpHeR0-HcvnzYWpmQyLOiiOyzKCvboz1xhaA')">A Virgem Vermelha</button>
+            <button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf-ZT9_q_dZOuTiyWws1n61AGapgdvPK0cooB0Ms6dAdpA')">Moana 2</button>
+            <button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf8QIm2lDqdpGBuVL9xjT24HNgRXd4hzGL3-MJM46YAJ4Q')">Terror em Crescent City</button>
+            <button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf99vI2Fnqq__kjwWpDMTwH-fjYVLZAI7URCtnEtr_NNWQ')">O Último Hotel</button>
+        </div>
+        <video id="movie-player" controls></video>
+    </div>
+
+    <script>
+        function updateDateTime() {
+            const options = {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: 'numeric',
+                minute: 'numeric',
+                second: 'numeric',
+                hour12: true,
+                timeZone: 'America/Sao_Paulo'
+            };
+            const currentDateTime = new Date().toLocaleString('pt-BR', options);
+            document.getElementById('datetime').textContent = currentDateTime;
+        }
+
+        setInterval(updateDateTime, 1000);
+        updateDateTime();
+
+        document.querySelector('.movies').addEventListener('click', () => {
+            document.getElementById('movie-section').style.display = 'flex';
+        });
+
+        function playMovie(url) {
+            const player = document.getElementById('movie-player');
+            player.src = url;
+            player.play();
+        }
+    </script>
+</body>
+</html>
