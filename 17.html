@@ -124,10 +124,7 @@
 
     <div id="movie-section">
         <h2>Filmes Disponíveis</h2>
-        
-<input type="text" id="searchInput" placeholder="Buscar filme..." style="padding: 10px; width: 80%; max-width: 400px; font-size: 16px; border-radius: 5px; border: none; margin-bottom: 20px;">
-
-<div class="movie-buttons">
+        <div class="movie-buttons">
             <button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf_fs4nFTSvRPwD_2vhdIO8C0rgWNcjFdZDQt4YtoFlnFg')">O Retorno do Rei</button>
             <button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf8L2Ly-UgQS69rpYIFvY9AJI_sSvpvszhPQysxmu5nRzA')">Jurado Nº2</button>
             <button onclick="playMovie('http://aguacomgas.shop:80/play/mlKOZNPH4B5AiQj3AIzh8R-9MLUeU-NPThBEP4oiTf90qRJW2KgpHeR0-HcvnzYWpmQyLOiiOyzKCvboz1xhaA')">A Virgem Vermelha</button>
@@ -261,16 +258,6 @@
         setInterval(updateDateTime, 1000);
         updateDateTime();
 
-    document.getElementById('searchInput').addEventListener('input', function () {
-        const query = this.value.toLowerCase();
-        const buttons = document.querySelectorAll('.movie-buttons button');
-        buttons.forEach(button => {
-            const title = button.textContent.toLowerCase();
-            button.style.display = title.includes(query) ? 'inline-block' : 'none';
-        });
-    });
-
-
         document.querySelector('.movies').addEventListener('click', () => {
             document.getElementById('movie-section').style.display = 'flex';
         });
@@ -282,4 +269,4 @@
         }
     </script>
 </body>
-    </html>                            
+</html>
