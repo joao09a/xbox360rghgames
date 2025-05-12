@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Acerte o Alvo!</title>
+  <style>
+    body {
+      margin: 0;
+      background-color: #222;
+      color: white;
+      font-family: sans-serif;
+      text-align: center;
+    }
+    #gameArea {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+    }
+    .target {
+      width: 80px;
+      height: 80px;
+      background-color: red;
+      border-radius: 50%;
+      position: absolute;
+      cursor: pointer;
+    }
+    #timer {
+      position: absolute;
+      top: 10px;
+      right: 20px;
+      font-size: 24px;
+      font-weight: bold;
+    }
+    #restartBtn {
+      position: absolute;
+      top: 10px;
+      left: 20px;
+      font-size: 16px;
+      padding: 10px 20px;
+      background-color: #444;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    h1 {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Pontuação: <span id="score">0</span> / 10</h1>
+  <div id="timer">Tempo: 00:00:000</div>
+  <button id="restartBtn" onclick="restartGame()">Reiniciar</button>
+  <div id="gameArea"></div>
+
+  <script>
+    const gameArea = document.getElementById('gameArea');
+    const scoreDisplay = document.getElementById('score');
+    const timerDisplay = document.getElementById('timer');
+    let score = 0;
+    let totalTargets = 10;
+    let timer = 0;
+    let timerInterval;
+
+    function formatTime(ms) {
+      let minutes = String(Math.floor(ms / 60000)).padStart(2, '0');
+      let seconds = String(Math.floor((ms % 60000) / 1000)).padStart(2, '0');
+      let milliseconds = String(ms % 1000).padStart(3, '0');
+      return `${minutes}:${seconds}:${milliseconds}`;
+    }
+
+    function startTimer() {
+      timer = 0;
+      timerInterval = setInterval(() => {
+        timer += 10;
+        timerDisplay.textContent = `Tempo: ${formatTime(timer)}`;
+      }, 10);
+    }
+
+    function stopTimer() {
+      clearInterval(timerInterval);
+    }
+
+    function spawnTarget() {
+      if (score >= totalTargets) return;
+
+      const target = document.createElement('div');
+      target.classList.add('target');
+
+      const x = Math.random() * (window.innerWidth - 80);
+      const y = Math.random() * (window.innerHeight - 80);
+      target.style.left = `${x}px`;
+      target.style.top = `${y}px`;
+
+      target.onclick = () => {
+        target.remove();
+        score++;
+        scoreDisplay.textContent = `${score} / ${totalTargets}`;
+        if (score >= totalTargets) {
+          stopTimer();
+          alert(`Parabéns! Você concluiu em ${formatTime(timer)}.`);
+        } else {
+          spawnTarget();
+        }
+      };
+
+      gameArea.appendChild(target);
+    }
+
+    function restartGame() {
+      // Limpa o jogo
+      stopTimer();
+      timer = 0;
+      timerDisplay.textContent = "Tempo: 00:00:000";
+      score = 0;
+      scoreDisplay.textContent = `0 / ${totalTargets}`;
+      gameArea.innerHTML = "";
+      startTimer();
+      spawnTarget();
+    }
+
+    // Início do jogo
+    startTimer();
+    spawnTarget();
+  </script>
+</body>
+</html>
