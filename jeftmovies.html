@@ -1,0 +1,1268 @@
+<!DOCTYPE html>
+
+<html lang="pt-br">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>JEFTMOVIES</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&amp;display=swap" rel="stylesheet"/>
+<link href="https://cdn.plyr.io/3.7.8/plyr.css" rel="stylesheet"/>
+<style>
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #000;
+      color: #fff;
+    }
+
+    /* Loader */
+    #loader {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: #000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      opacity: 1;
+      transition: opacity 0.6s ease;
+    }
+
+    .loader-text {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 700;
+      font-size: 36px;
+      color: #ff0000;
+      position: relative;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      text-shadow:
+        0 0 5px #ff0000,
+        0 0 10px #ff0000,
+        0 0 20px #ff0000,
+        0 0 40px #ff0000;
+      cursor: default;
+      user-select: none;
+      animation: blink 1.5s infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 40px;
+      background-color: #111;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .logo {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 700;
+      font-size: 32px;
+      color: #ff0000;
+      position: relative;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      text-shadow:
+        0 0 5px #ff0000,
+        0 0 10px #ff0000,
+        0 0 20px #ff0000,
+        0 0 40px #ff0000;
+      cursor: default;
+      user-select: none;
+    }
+
+    /* brilho animado na logo */
+    .logo::after {
+      content: '';
+      position: absolute;
+      top: -10%;
+      left: -10%;
+      width: 120%;
+      height: 120%;
+      pointer-events: none;
+      background: radial-gradient(circle at center, rgba(255,0,0,0.7), transparent 70%);
+      filter: blur(8px);
+      animation: pulse 2.5s infinite ease-in-out;
+      z-index: -1;
+      border-radius: 6px;
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        opacity: 0.7;
+        transform: scale(1);
+      }
+      50% {
+        opacity: 0.3;
+        transform: scale(1.1);
+      }
+    }
+
+    nav a {
+      color: #fff;
+      margin-left: 20px;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .banner {
+      background: linear-gradient(to bottom, #111, #000);
+      height: 200px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .banner h1 {
+      font-size: 36px;
+      color: red;
+    }
+
+    .search-bar {
+      padding: 20px 40px;
+      text-align: center;
+    }
+
+    .search-bar input {
+      width: 100%;
+      max-width: 500px;
+      padding: 12px 16px;
+      font-size: 16px;
+      border-radius: 6px;
+      border: none;
+      outline: none;
+      background-color: #222;
+      color: white;
+    }
+
+    .carousel {
+      padding: 20px 40px;
+    }
+
+    .carousel-items {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .movie-card {
+      width: 160px;
+      height: 240px;
+      background: linear-gradient(145deg, #111, red);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      border-radius: 6px;
+      color: #fff;
+      font-weight: bold;
+      text-decoration: none;
+      padding: 10px;
+      cursor: pointer;
+    }
+
+    .movie-card:hover {
+      opacity: 0.9;
+    }
+
+    .video-player {
+      margin: 30px 40px;
+      display: none;
+    }
+
+    .video-player video {
+      width: 100%;
+      max-width: 1000px;
+      height: auto;
+      border-radius: 10px;
+    }
+
+    /* Remove borda no fullscreen */
+    .plyr--fullscreen video {
+      border: none !important;
+    }
+  </style>
+</head>
+<body>
+<div id="loader">
+<div class="loader-text">JEFTMOVIES</div>
+</div>
+<header>
+<div class="logo">JEFTMOVIES</div>
+<nav>
+<a href="#home">Home</a>
+<a href="#movies">Movies</a>
+<!-- My List removido -->
+</nav>
+</header>
+<section class="banner" id="home">
+<h1>Bem-vindo ao JEFTMOVIES</h1>
+</section>
+<div class="search-bar">
+<input id="searchInput" oninput="filtrarFilmes()" placeholder="Pesquisar filmes..." type="text"/>
+</div>
+<section class="video-player" id="player">
+<video controls="" id="video" playsinline=""></video>
+</section>
+<section class="carousel" id="movies">
+<h2>Todos os Filmes</h2>
+<div class="carousel-items" id="filmesContainer">
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738174.mp4')">A Casa da Árvore</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738175.mp4')">Passagrana</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738176.mp4')">Cabrito</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738177.mp4')">Ainda Somos os Mesmos</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738178.mp4')">Grande Sertão</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738180.mp4')">Saudade Fez Morada Aqui Dentro</div>
+<div class="movie-card" onclick="playVideo('http://dnscinyie.top:80/movie/145425977/847426424/738181.mp4')">Silvio</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738182.mp4')">O Armário Mágico</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738183.mp4')">Abraço de Mãe</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738184.mp4')">Karsmênia</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738185.mp4')">Maníaco do Parque</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738186.mp4')">Estômago 2: O Poderoso Chef</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738187.mp4')">A História de Daniel</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738188.mp4')">Motel Destino</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738189.mp4')">Tô de Graça: O Filme</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738190.mp4')">Sem Asas</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738191.mp4')">Acordo com Lampião? Só na Boca do Fuzil!</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738192.mp4')">Apaixonada</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738193.mp4')">Nove Águas</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738194.mp4')">Levante</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738195.mp4')">Baile</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738196.mp4')">Tudo Que é Apertado Rasga</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738197.mp4')">Negrum3</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738198.mp4')">Lia: O Filme</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738199.mp4')">Joderism</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738200.mp4')">Duda</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738201.mp4')">Dela</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738202.mp4')">Bonde</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738203.mp4')">Doce Família</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738204.mp4')">Avassaladoras 2.0</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738205.mp4')">Mallandro: O Errado que Deu Certo</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738206.mp4')">Inabitáveis</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738207.mp4')">EGUM</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738208.mp4')">Leme do Destino</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738209.mp4')">Porto Príncipe</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738210.mp4')">Luccas e Gi em: Dinossauros</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738211.mp4')">A Torre</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738212.mp4')">Um Broto Legal</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738213.mp4')">Madame Satã</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738214.mp4')">Brasil Visto do Alto</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738215.mp4')">Meu Sangue Ferve por Você</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738216.mp4')">Gaby Estrella: O Filme</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738217.mp4')">Bello: O Rei do Futevôlei</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738218.mp4')">A Festa de Léo</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738219.mp4')">Amigos Sem Compromisso</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738220.mp4')">Entre sombras</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738221.mp4')">Férias Trocadas</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738222.mp4')">Vidente Por Acidente</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738223.mp4')">Miss!</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738224.mp4')">#eagoraoque</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738225.mp4')">Morando com o Crush</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738226.mp4')">Dois é Demais em Orlando</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738227.mp4')">Nosso Lar 2: Os Mensageiros</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738228.mp4')">Trash: A Esperança Vem do Lixo</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738229.mp4')">Aumenta que é Rock'n'Roll</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738230.mp4')">Apaixonada</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738231.mp4')">Os Farofeiros 2</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738232.mp4')">Sem Coração</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738233.mp4')">Uma Família Feliz</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738234.mp4')">Saudosa Maloca</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738235.mp4')">Domingo à Noite</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738236.mp4')">Doleira: A História de Nelma Kodama</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738237.mp4')">Jorge da Capadócia</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738238.mp4')">Inferninho</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738239.mp4')">Biônicos</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738240.mp4')">Evidências do Amor</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738241.mp4')">Corpolítica</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738242.mp4')">O Casamento de Romeu e Julieta</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738243.mp4')">Como Vivem os Bravos</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738244.mp4')">Transamazonia</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738245.mp4')">Partiu América</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738246.mp4')">Meninas Não Choram</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738247.mp4')">Sonhos Roubados</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738253.mp4')">Bia (2.0)</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738254.mp4')">Eu Sou Maria</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738255.mp4')">São Ateu</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738256.mp4')">O Livro dos Prazeres</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738257.mp4')">Sete Chaves e uma Mensagem</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738258.mp4')">Gato Galáctico e O Feitiço do Tempo</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738259.mp4')">Só no Sertão</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738260.mp4')">Bala Sem Nome</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738261.mp4')">O Mestre da Fumaça</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738262.mp4')">Propriedade</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738263.mp4')">Turma da Mônica Jovem: Reflexos do Medo</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738264.mp4')">Derrapada</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738265.mp4')">Querência</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738266.mp4')">Ó 2</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738267.mp4')">Minha Irmã e Eu</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738268.mp4')">Menarca</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738269.mp4')">Fazendo Meu Filme</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738270.mp4')">Mamonas Assassinas: O Filme</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738271.mp4')">O Sequestro do Voo 375</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738272.mp4')">Apoteose do Samba: 40 Anos de Sapucaí</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738273.mp4')">Tá Escrito</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738274.mp4')">Não Tem Volta</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738275.mp4')">Pedágio</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738276.mp4')">As Aventuras de Poliana: O Filme</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738277.mp4')">Tia Virgínia</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738278.mp4')">Um Par Pra Chamar de Meu</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738279.mp4')">Meu Cunhado é Um Vampiro</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738280.mp4')">Mussum: O Filmis</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738281.mp4')">TPM! Meu amor</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738282.mp4')">Fluxo</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738283.mp4')">O Rapto do Betão</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738284.mp4')">Meu Nome é Gal</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738285.mp4')">Nosso Sonho</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738286.mp4')">Tire 5 Cartas</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738287.mp4')">Luccas Neto em: Uma Aventura no Zoológico</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738288.mp4')">Christabel</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738289.mp4')">Bixa Travesty</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738290.mp4')">O Porteiro</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738291.mp4')">Chic Show</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738292.mp4')">Angela</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738293.mp4')">Contravenção</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738294.mp4')">Os Aventureiros – A Origem</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738295.mp4')">Boa Noite</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738296.mp4')">O Bem Amado</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738297.mp4')">Jorginho Guinle So Se Vive uma Vez</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738298.mp4')">Impuros: O Filme</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738299.mp4')">Amazon Rasta</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738300.mp4')">A Noite das Vampiras</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738301.mp4')">Papai é Pop</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738302.mp4')">Horácio</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738303.mp4')">No Ritmo da Fé</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738304.mp4')">O Retorno da Luz: O Início</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738305.mp4')">Missão Cupido</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738306.mp4')">O Homem Cordial</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738307.mp4')">Albertina</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738308.mp4')">Mato Seco em Chamas</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738309.mp4')">Sísmicas</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738310.mp4')">Carvão</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738311.mp4')">Barraco de Família</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738312.mp4')">O Rio do Desejo</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738317.mp4')">Um Ano Inesquecível: Outuno</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738318.mp4')">Luccas Neto em: O Meu Aniversário</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738319.mp4')">Um Ano Inesquecível: Verão</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738320.mp4')">Depois Daquela Festa</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738321.mp4')">Tudo Acaba Em Festa</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738322.mp4')">Noites Alienígenas</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738323.mp4')">Maria</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738324.mp4')">Fendas</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738325.mp4')">Jaguaretê-Avá: Pantanal em Chamas</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738326.mp4')">Sideral</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738327.mp4')">D.P.A. e a Biblioteca Banida</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738328.mp4')">Raquel 1:1</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738329.mp4')">Fogaréu</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738330.mp4')">Aos Nossos Filhos</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738331.mp4')">Homem Onça</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738332.mp4')">Regra 34</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738333.mp4')">O Faixa Preta</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738334.mp4')">O Clube dos Anjos</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738335.mp4')">Pelé Eterno</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738336.mp4')">Posse do Presidente Lula</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738338.mp4')">A Queda</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738339.mp4')">Ó</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738341.mp4')">Luccas Neto em: O Plano dos Vilões</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738342.mp4')">O Homem Que Copiava</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738343.mp4')">Whindersson Nunes: É de Mim Mesmo</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738344.mp4')">Senna</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738345.mp4')">Rebento</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738346.mp4')">A Sogra Perfeita</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738347.mp4')">Cafundó</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738348.mp4')">Lulli</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738349.mp4')">Marighella</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738350.mp4')">Se Eu Fosse Você</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738351.mp4')">Se Eu Fosse Você 2</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738352.mp4')">Eu Receberia as Piores Notícias dos Seus Lindos Lábios</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738353.mp4')">Charlie Brown?</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738354.mp4')">Gilberto Gil: Um Deus em seu Jardim</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738355.mp4')">Blitz</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738356.mp4')">Boca do Lixo</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738357.mp4')">Tudo Que Deus Criou</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738358.mp4')">Boa Sorte</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738359.mp4')">Amores Possíveis</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738360.mp4')">Eu Sou Brasileiro</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738361.mp4')">Os Normais: O Filme</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738362.mp4')">Os Normais 2</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738363.mp4')">Lisbela e o Prisioneiro</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738364.mp4')">Achados e Perdidos</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738365.mp4')">Piedade</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738366.mp4')">Dois Mais Dois</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738367.mp4')">Que Horas Ela Volta?</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738368.mp4')">Um Casal Inseparável</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738369.mp4')">Permanência</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738370.mp4')">Vai Que Cola: O Filme</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738371.mp4')">Um Filme de Cinema</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738372.mp4')">Cinema Novo</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738373.mp4')">Brasília 18%</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738374.mp4')">Cabra-Cega</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738375.mp4')">O Mentiroso</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738376.mp4')">Luccas Neto em: O Mapa do Tesouro 2</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738377.mp4')">Getúlio</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738378.mp4')">Amigas de Sorte</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738379.mp4')">A Mulher Invisível</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738380.mp4')">o Cupido Trapalhão</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738381.mp4')">O Nó do Diabo</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738382.mp4')">Salomão</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738383.mp4')">O Amor Dá Trabalho</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738384.mp4')">400 Contra 1: Uma História do Crime Organizado</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738385.mp4')">Heleno</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738386.mp4')">Xingu</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738387.mp4')">Tô Ryca!</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738388.mp4')">O Menino no Espelho</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738389.mp4')">Através da Sombra</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738390.mp4')">Dona Flor e Seus Dois Maridos</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738391.mp4')">Eu Te Amo</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738392.mp4')">Corisco &amp; Dadá</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738393.mp4')">Tainá 3: A Origem</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738394.mp4')">Luccas Neto em: Duas Babás Muito Esquisitas</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738395.mp4')">Os Saltimbancos Trapalhões: Rumo a Hollywood</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738396.mp4')">Os Saltimbancos Trapalhões</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738397.mp4')">Como Se Tornar o Pior Aluno da Escola</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738398.mp4')">Tropa de Elite 2: O Inimigo Agora é Outro</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738399.mp4')">Tropa de Elite</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738400.mp4')">Vazio Coração</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738401.mp4')">Antônia</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738402.mp4')">Meu País</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738403.mp4')">Boi Neon</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738404.mp4')">Marighella (2019)</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738405.mp4')">Morto Não Fala</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738406.mp4')">Uns Bracos</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738407.mp4')">Trabalhar Cansa</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738408.mp4')">O Madeireiro</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738409.mp4')">O Estigma</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738410.mp4')">As Maos de Meu Filho</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738411.mp4')">Amores de Chumbo</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738412.mp4')">Ó</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738413.mp4')">A Esperanca E A Ultima Que Morre</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738414.mp4')">Quincas Berro Dagua</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738415.mp4')">Memórias Póstumas</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738416.mp4')">Sobre Rodas</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738417.mp4')">O Cheiro Do Ralo</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738418.mp4')">Cazuza O Tempo Nao Para</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738419.mp4')">Carandiru</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738420.mp4')">Lisbela e o Prisioneiro</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738421.mp4')">O Menino Da Porteira</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738422.mp4')">Irmaos De Fe</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738423.mp4')">Tainá: Uma Aventura na Amazônia</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738425.mp4')">Deus E Brasileiro</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738426.mp4')">A Cabeça de Gumercindo Saraiva</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738427.mp4')">Cidade dos Homens</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738428.mp4')">O Doutrinador</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738429.mp4')">O Milagre dos Pássaros</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738430.mp4')">Macabro</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738431.mp4')">Tapete Vermelho</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738432.mp4')">Qualquer Gato Vira Lata 2</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738433.mp4')">Qualquer Gato Vira-Lata</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738434.mp4')">O Homem Que Desafiou o Diabo</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738435.mp4')">Bróder</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738436.mp4')">O Homem do Futuro</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738437.mp4')">O Marujo Trapalhão (1976)</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738438.mp4')">o Fantasma Trapalhão (1998)</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738439.mp4')">O Trapalhão da Floresta</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738440.mp4')">O Trapalhão no Planalto dos Macacos</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738441.mp4')">O Trapalhão nas Minas do Rei Salomão</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738442.mp4')">O Trapalhão na Ilha do Tesouro</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738443.mp4')">O Trapalhão na Arca de Noé</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738444.mp4')">O Trapalhão e a Luz Azul</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738445.mp4')">Os Vagabundos Trapalhões</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738446.mp4')">Os Três Mosqueteiros Trapalhões</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738447.mp4')">Os Trapalhões no Reino da Fantasia</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738448.mp4')">Os Trapalhões no Rabo do Cometa</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738449.mp4')">Os Trapalhões no Auto da Compadecida</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738450.mp4')">Os Trapalhões na Terra dos Monstros</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738452.mp4')">Os Trapalhões e o Rei do Futebol</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738453.mp4')">Os Trapalhões e o Mágico de Oróz</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738454.mp4')">Os Trapalhões e a Árvore da Juventude</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738456.mp4')">Os Fantasmas Trapalhões</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738457.mp4')">O Rei e os Trapalhões</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738458.mp4')">O Noviço Rebelde</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738459.mp4')">O Mundo Mágico dos Trapalhões</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738460.mp4')">O Mistério de Robin Hood</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738461.mp4')">O Incrível Monstro Trapalhão</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738462.mp4')">O Cinderelo Trapalhão</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738463.mp4')">O Casamento dos Trapalhões</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738464.mp4')">O Cangaceiro Trapalhão</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738465.mp4')">Na Onda do Iê-Iê-Iê</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738466.mp4')">Dois na Lona</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738467.mp4')">Os Trapalhões na Guerra dos Planetas</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738468.mp4')">o Vagabundo</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738469.mp4')">A Princesa Xuxa e os Trapalhões</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738470.mp4')">Ali Babá e os Quarenta Ladrões</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738471.mp4')">Aladim e a Lâmpada Maravilhosa</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738472.mp4')">A Filha dos Trapalhões</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738473.mp4')">Adorável Trapalhão</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738474.mp4')">O Crime da Cabra</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738475.mp4')">Embarque Imediato</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738476.mp4')">Copa de Elite</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738477.mp4')">Suburbia O Filme</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738478.mp4')">Hebe: A Estrela do Brasil</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738479.mp4')">Luccas Neto em: O Fim do Natal</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738480.mp4')">Condado Macabro</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738481.mp4')">Pendular</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738482.mp4')">Carrossel 2: O Sumiço de Maria Joaquina</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738483.mp4')">Todo Clichê do Amor</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738484.mp4')">Praça Paris</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738485.mp4')">O Clube dos Canibais</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738486.mp4')">Luccas Neto em: Dia das Crianças</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738487.mp4')">Califórnia</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738488.mp4')">Turma da Mônica: Laços</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738489.mp4')">Luccas Neto em: Acampamento de Férias</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738490.mp4')">Assalto ao Banco Central</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738491.mp4')">Meu Passado Me Condena</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738492.mp4')">Mato Sem Cachorro</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738493.mp4')">Nise O Coracao Da Loucura</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738494.mp4')">Todas As Cancoes De Amor</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738495.mp4')">Meu Nome Nao E Johnny</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738496.mp4')">Luccas Neto Em Perdidos Na Noite De Natal</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738497.mp4')">Dias Vazios</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738498.mp4')">Como Nossos Pais</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738499.mp4')">Chocante</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738500.mp4')">Democracia Em Vertigem</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738501.mp4')">Sob Pressao</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738502.mp4')">Cine Holliudy 2 A Chibata Sideral</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738503.mp4')">De Pernas Pro Ar 3</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738504.mp4')">Albatroz</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738505.mp4')">Minha Fama de Mau</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738506.mp4')">Luccas Neto em: Uma Babá Muito Esquisita</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738507.mp4')">Vazante</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738508.mp4')">Rei Davi O Filme</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738509.mp4')">Querida Mamae</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738510.mp4')">Gabriel E A Montanha</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738511.mp4')">Entre Idas E Vindas</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738512.mp4')">Cine Holliudy</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738513.mp4')">Central Station</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738514.mp4')">Sai de Baixo</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738515.mp4')">Yonlu</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738516.mp4')">Um Novo Capitalismo</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738517.mp4')">Tudo Por Um Popstar</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738518.mp4')">Sequestro Relampago</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738519.mp4')">Rasga Coracao</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738520.mp4')">Paixao de Cristo de Nova Jerusalem</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738521.mp4')">O Grande Circo Místico</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738522.mp4')">Nao se Aceitam Devolucoes</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738523.mp4')">Cinderela Pop</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738524.mp4')">1964</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738525.mp4')">Tudo Acaba Em Festa</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738526.mp4')">O Homem Perfeito</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738527.mp4')">Minha Vida em Marte</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738528.mp4')">Detetives do Predio Azul 2</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738529.mp4')">Os Farofeiros</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738530.mp4')">Policia Federal a Lei e Para Todos</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738531.mp4')">A Viagem</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738532.mp4')">Desejos Ocultos</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738533.mp4')">Presságio (2009)</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738534.mp4')">Rebel Moon</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738535.mp4')">Rebel Moon</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738536.mp4')">I.S.S.</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738537.mp4')">Liga da Justiça: Crise nas Infinitas Terras</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738538.mp4')">Code 8: Renegados</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738539.mp4')">eu sou do futuro</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738540.mp4')">The Pod Generation</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738541.mp4')">Doctor Who: The Star Beast</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738542.mp4')">Awareness: A Realidade é Uma Ilusão</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738543.mp4')">Os Escolhidos (2013)</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738544.mp4')">Batalha dos Drones</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738545.mp4')">A Bruxa</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738546.mp4')">Power Rangers 2: Turbo</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738547.mp4')">2001: Uma Odisséia no Espaço</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738548.mp4')">Godzilla Ressurge</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738549.mp4')">Corrective Measures – Fuga da Prisão</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738550.mp4')">Gattaca</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738551.mp4')">Rubikon</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738552.mp4')">A Invasão</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738553.mp4')">A Invasão</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738554.mp4')">Ender's Game: O Jogo do Exterminador</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738555.mp4')">O Projeto Adam</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738556.mp4')">Amor Artificial</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738557.mp4')">A aventura de ARI: meu amigo robô</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738558.mp4')">Warning</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738559.mp4')">Refúgio</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738560.mp4')">Matrix Resurrections</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738561.mp4')">Mãe x Androides</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738562.mp4')">Zone 414</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738563.mp4')">Ron Bugado</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738564.mp4')">Encontros</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738565.mp4')">Venom: Tempo de Carnificina</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738566.mp4')">um Novo Começo</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738567.mp4')">Finch</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738568.mp4')">Evolução</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738569.mp4')">Possessor</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738570.mp4')">Agulha no Palheiro Temporal</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738571.mp4')">Injustiça: Deuses Entre Nós</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738572.mp4')">Needle in a Timestack</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738573.mp4')">Cubo 2: Hipercubo</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738574.mp4')">Cubo</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738575.mp4')">Cubo Zero</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738576.mp4')">Ataque ao Prédio</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738577.mp4')">Perdidos no Espaço</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738578.mp4')">Blush</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738579.mp4')">Meia Noite e um (Remake)</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738580.mp4')">O Dia em que a Terra Parou</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738581.mp4')">Dredd</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738582.mp4')">Pequenos Gênios</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738583.mp4')">A Batalha do Planeta dos Macacos</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738584.mp4')">A Fuga do Planeta dos Macacos</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738585.mp4')">Skylines</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738586.mp4')">Estranho Passageiro Sputnik</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738587.mp4')">2067</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738588.mp4')">Ameaca No Espaco</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738589.mp4')">O Guardiao Dos Mundos</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738590.mp4')">Jogador Numero 1</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738591.mp4')">A Hora do Silêncio</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738592.mp4')">Terror em Crescent City</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738593.mp4')">O My Darling</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738594.mp4')">Jurado Nº 2</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738595.mp4')">jigra</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738596.mp4')">O Homem Sem Medo</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738597.mp4')">Texas</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738598.mp4')">Homens Maus</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738599.mp4')">Fúria Sem Limites</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738600.mp4')">Os Assassinatos de Buckingham</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738601.mp4')">Pacto de Redenção</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738602.mp4')">10 Dias de um Homem Curioso</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738603.mp4')">O Crime Não Descansa</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738604.mp4')">A Última Parada no Arizona</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738605.mp4')">Assalto Brutal</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738606.mp4')">No Lugar da Outra</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738607.mp4')">Setor 36</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738608.mp4')">Tarde Demais Para Voltar</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738609.mp4')">Estrada do Crime</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738610.mp4')">De Volta ao Crime</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738611.mp4')">Oito Mulheres e um Segredo</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738612.mp4')">Assassino por Acaso</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738613.mp4')">Clube dos Vândalos</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738614.mp4')">O Roubo de 88</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738615.mp4')">A Teia</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738616.mp4')">Love Lies Bleeding</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738617.mp4')">O Código do Silêncio</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738618.mp4')">O Roubo do Quadrado Negro</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738619.mp4')">Reféns da Noite</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738620.mp4')">A Teia</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738621.mp4')">Amor a Sangue Frio</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738622.mp4')">Um Homem Misterioso</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738623.mp4')">Obcecada</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738624.mp4')">Casamento Mortal</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738625.mp4')">O Clube de Apostas</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738626.mp4')">Mulheres Rebeldes</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738627.mp4')">Rosario Tijeras</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738628.mp4')">As Cores do Mal: Vermelho</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738629.mp4')">Lendas do Crime</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738630.mp4')">Escapando da Seita Nxivm: A Luta de uma Mãe para Salvar a Filha</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738631.mp4')">Confissões</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738632.mp4')">Tráfico Sexual</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738633.mp4')">Um Passado Sombrio</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738634.mp4')">Na Mira dos Assassinos</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738635.mp4')">Jogo do Destino</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738636.mp4')">As Duas Faces de um Crime</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738637.mp4')">Meu Nome Era Eileen</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738638.mp4')">The Dirty South</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738639.mp4')">Mea Culpa</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738640.mp4')">Indiferença</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738641.mp4')">Segurança Máxima</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738642.mp4')">A Luta</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738643.mp4')">O Jogo do Disfarce</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738644.mp4')">Laços do Crime</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738645.mp4')">O Silêncio da Chuva</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738646.mp4')">Finestkind</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738647.mp4')">Inocência</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738648.mp4')">A Informante</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738649.mp4')">Pesadelo Americano</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738650.mp4')">Believer 2</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738651.mp4')">O Assassino</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738652.mp4')">Um Plano Brilhante</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738653.mp4')">Matança</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738654.mp4')">Círculo de Espiões</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738655.mp4')">Suspeito X</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738656.mp4')">Era Uma Vez em Londres</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738657.mp4')">Freestyle</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738658.mp4')">10 Dias de um Homem Mau</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738659.mp4')">Dia das Bruxas</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738660.mp4')">Ted Bundy: A Irresistível Face do Mal</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738661.mp4')">O Enigma da Medusa</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738662.mp4')">Rastro de Violência</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738663.mp4')">Anjos da Lei 2</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738664.mp4')">Soror</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738665.mp4')">A Última Fonte</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738666.mp4')">Mafia Mamma: De Repente Criminosa</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738667.mp4')">Suriname</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738668.mp4')">Vingança em Dobro</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738669.mp4')">Sombras de um Crime</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738670.mp4')">Rastos de Sangue</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738671.mp4')">O Rei das Drogas</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738672.mp4')">A Maldição (2022)</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738673.mp4')">Chamas da Fúria</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738674.mp4')">Estado de Emergência</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738675.mp4')">Escapando da Seita Nxivm: A Luta de uma Mãe para Salvar a Filha</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738676.mp4')">Sob Suspeita</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738677.mp4')">Irmãos do Crime</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738678.mp4')">Sem Rastro</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738679.mp4')">O Interrogatório</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738680.mp4')">Amor Sem Limites</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738681.mp4')">Bandido</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738682.mp4')">Breaking</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738683.mp4')">Roubo pelos Ares</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738684.mp4')">Quem Matou Lady Winsley ?</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738685.mp4')">Em Águas Agitadas</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738686.mp4')">Abismos</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738687.mp4')">Sharper</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738688.mp4')">Assassino Americano</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738689.mp4')">Encontro Com A Morte</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738690.mp4')">Livrai-nos do Mal</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738691.mp4')">Echo Boomers: A Geração Esquecida</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738692.mp4')">Fuga de Natal</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738693.mp4')">Valan: Vale dos Anjos</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738694.mp4')">Como Virei Gângster</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738695.mp4')">Uma Noite Apavorante</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738696.mp4')">Uma Noite Sombria</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738697.mp4')">Amsterdam</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738698.mp4')">Fletch</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738699.mp4')">Emily the Criminal</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738700.mp4')">Plano de Aula</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738701.mp4')">Bilhete de Fuga</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738702.mp4')">Em Busca do Bilhete Premiado</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738703.mp4')">O My Darling</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738704.mp4')">Vento Selvagem</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738705.mp4')">O Passado</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738706.mp4')">O Desconhecido</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738707.mp4')">A Vida de Togo</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738708.mp4')">Uma Garota de Muita Sorte</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738709.mp4')">O Alfaiate</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738710.mp4')">Homens de Ouro</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738711.mp4')">Sequestro: Inocência Roubada</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738712.mp4')">O Crime de Georgetown</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738713.mp4')">O Preço da Sedução</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738714.mp4')">A Fuga de Akilla</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738715.mp4')">A Viúva Negra</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738716.mp4')">Mistério das Palavras Cruzadas: Enigma Mortal</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738717.mp4')">O Assassino em Série de Long Island</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738718.mp4')">American Sicario</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738719.mp4')">Tiro às Cegas</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738720.mp4')">Rastros de um Crime</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738721.mp4')">Passado Violento</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738722.mp4')">Fortaleza: O Olhar Do Sniper</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738723.mp4')">O Diabo que Você Conhece</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738724.mp4')">As Duas Mortes de Henry Baker</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738725.mp4')">Original Gangster</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738726.mp4')">O Golpe</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738727.mp4')">O Diabo que Você Conhece</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738728.mp4')">Naked Singularity</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738729.mp4')">South of Heaven</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738730.mp4')">Morte no Nilo</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738731.mp4')">Relatos de Guerra</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738732.mp4')">O Destemido Senhor da Guerra</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738733.mp4')">A Conquista da Honra</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738734.mp4')">O Silêncio na Noite</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738735.mp4')">Blitz</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738736.mp4')">Negociando com o Inimigo</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738737.mp4')">Beasts of No Nation</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738738.mp4')">A Face da Guerra</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738739.mp4')">O Herói do Holocausto</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738740.mp4')">Inferno no Gelo</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738741.mp4')">Napoleão</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738742.mp4')">The Last Rifleman</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738743.mp4')">Batalha Aérea</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738744.mp4')">A Guerreira Chinesa</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738745.mp4')">A Grande Fuga</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738746.mp4')">Guerra Sem Regras</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738747.mp4')">Quando a Guerra Acabar</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738748.mp4')">Acima das Linhas Inimigas</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738749.mp4')">Guerra Civil</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738750.mp4')">Codinome: Banderas</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738751.mp4')">O Atirador 4</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738752.mp4')">A Sniper Russa</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738753.mp4')">Coragem Sem Limites</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738754.mp4')">Uma Vida: A História de Nicholas Winton</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738755.mp4')">Ataque à Colina 400</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738756.mp4')">A Corte Marcial Da Nave Da Revolta</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738757.mp4')">Wildcat</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738758.mp4')">The Caine Mutiny Court-Martial</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738759.mp4')">Zona de Interesse</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738760.mp4')">O Sexto Ônibus</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738761.mp4')">A Última Linha de Defesa</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738762.mp4')">Zona de Risco</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738763.mp4')">Escuridão</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738764.mp4')">A Rainha Guerreira</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738765.mp4')">Caminhos da Sobrevivência</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738766.mp4')">Segredos de Espiões</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738767.mp4')">Napoleão</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738768.mp4')">Lados Opostos</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738769.mp4')">Irmãos de Guerra</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738770.mp4')">Até o Limite da Honra</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738771.mp4')">A Última Esperança Soviética</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738772.mp4')">Os 5 Odiados</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738773.mp4')">O Piloto</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738774.mp4')">Traumas de Guerra</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738775.mp4')">À Espreita</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738776.mp4')">Na Mira do Atirador</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738777.mp4')">U311: Guerra em Alto Mar</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738778.mp4')">Corvo Branco</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738779.mp4')">Além da Escuridão</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738780.mp4')">Três Mulheres: Uma Esperança</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738781.mp4')">Amor em Tempos de Ódio</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738782.mp4')">Sisu</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738783.mp4')">Códigos de Guerra</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738784.mp4')">O Pacto (2023)</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738785.mp4')">A Batalha das Ardenas: A Última Ofensiva de Hitler</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738786.mp4')">Sangue e Ouro</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738787.mp4')">Deixando o Afeganistão</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738788.mp4')">As Legiões Emergentes</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738789.mp4')">A Irmandade da Guerra</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738790.mp4')">Narvik</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738791.mp4')">Irmãos de Honra</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738792.mp4')">Os Heróis Da Ferrovia</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738793.mp4')">Nada de Novo no Front</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738794.mp4')">100 Dias de Resistência</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738795.mp4')">Os 800</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738796.mp4')">Operação Cerveja</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738797.mp4')">O Último Ataque de Hitler</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738798.mp4')">Perigo Iminente</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738799.mp4')">O Fantasma Vermelho</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738800.mp4')">Resistência</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738801.mp4')">Mariya</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738802.mp4')">Comboio 48: A Última Resistência</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738803.mp4')">Uma Lição de Esperança</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738804.mp4')">O Soldado que Não Existiu</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738805.mp4')">O Que Faria Jesus?</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738806.mp4')">Um Paparazzi Animal</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738807.mp4')">A.R.C.H.I.E. 2</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738808.mp4')">Indomáveis</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738809.mp4')">Jornada Para Belém</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738810.mp4')">Prancer: Um Conto de Natal</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738811.mp4')">Um Natal com Teddy</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738812.mp4')">Coração de Campeão</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738813.mp4')">Uma Aventura de Natal</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738814.mp4')">Tocam os Sinos de Natal</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738815.mp4')">Um Natal Encantado</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738816.mp4')">Snoopy Apresenta: A Escola da Lucy</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738817.mp4')">Lucia e o Cristal Mágico</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738818.mp4')">Monster High 2</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738819.mp4')">Pequenos Mágicos</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738820.mp4')">A Turma dos Geeks</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738821.mp4')">Pequenos Espiões: Apocalipse</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738822.mp4')">Programa de Proteção para Princesas</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738823.mp4')">Eu e Meu Guarda Chuva</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738824.mp4')">Operação Filhote</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738825.mp4')">Caminho Para a Liberdade</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738826.mp4')">Monstro Robô</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738827.mp4')">Natal em Evergreen: Cartas ao Papai Noel</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738828.mp4')">O Pequeno Bulldog</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738829.mp4')">Aprendiz de Espiã</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738830.mp4')">O Menino e o Tigre</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738831.mp4')">A Jogada de Chang</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738832.mp4')">Quebrando o Gelo</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738833.mp4')">Silverstar</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738834.mp4')">Projeto Natal dos Sonhos</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738835.mp4')">Um Natal na Suíça</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738836.mp4')">Desvendando o Natal</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738837.mp4')">Destino: Natal</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738838.mp4')">Feliz Ano Novo... de Novo</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738839.mp4')">O Grinch</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738840.mp4')">Um Natal em Família Diferente</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738841.mp4')">Felicidade sob a Árvore de Natal</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738842.mp4')">Procura-se Gonker</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738843.mp4')">Um Acordo de Natal: Salvando o Starlight</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738844.mp4')">Tom &amp; Jerry: Terra do Boneco de Neve</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738845.mp4')">Uma Viagem Incrível: O Mistério do Ovo</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738846.mp4')">Matilda: O Musical</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738847.mp4')">O Milagre de Natal</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738848.mp4')">Natal em Nova York</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738849.mp4')">Under Wraps: Uma Múmia no Halloween 2</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738850.mp4')">Hurricane – Livre como o Vento</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738851.mp4')">Para Sempre Amor</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738852.mp4')">Natal!</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738853.mp4')">O Paciente Perdido</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738854.mp4')">O Lobo E O Leão</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738855.mp4')">Nosso Natal na Fazenda</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738856.mp4')">O Melhor da Neve</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738857.mp4')">A Grande Aventura de Blue na Cidade</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738858.mp4')">Uma História de Natal Natalina</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738859.mp4')">A Cozinheira Curiosa: Receita Assassina</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738860.mp4')">Terra dos Sonhos</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738861.mp4')">A Família Noel 2</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738862.mp4')">Fall &amp; Order</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738863.mp4')">Natal no Riacho</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738864.mp4')">O Lendário Cão Guerreiro</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738865.mp4')">Faça Um Desejo!</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738866.mp4')">Ivy e Bean</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738867.mp4')">Ivy e Bean Entram na Dança</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738868.mp4')">Ivy e Bean: O Fantasma do Banheiro</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738869.mp4')">De Volta para Casa (2020)</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738870.mp4')">A Menina que Acredita em Milagres</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738871.mp4')">LEGO Star Wars: Férias de Verão</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738872.mp4')">13: O Musical</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738873.mp4')">O Relógio Encantado</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738874.mp4')">Um Novo Conto de Cinderela</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738875.mp4')">Dakota</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738876.mp4')">O Desejo de Charlie</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738877.mp4')">Aventura em Duas Rodas</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738878.mp4')">Um Gato de Rua Chamado Bob</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738879.mp4')">Em Busca do Portal Mágico</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738880.mp4')">O Despertar do Tigre</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738881.mp4')">Amar é para Os Fortes</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738882.mp4')">O Jardim Secreto de Mariana</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738883.mp4')">Escola de Magia</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738884.mp4')">O Jovem Viking</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738885.mp4')">Nate</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738886.mp4')">Felix E O Tesouro de Morga</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738887.mp4')">Estranha Forma de Vida</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738888.mp4')">Horizon: Uma Saga Americana</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738889.mp4')">A Última Caçada</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738890.mp4')">Jovens Justiceiros</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738891.mp4')">No Coração do Velho Oeste</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738892.mp4')">Trilha da Justiça</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738893.mp4')">Era uma Vez no Oeste</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738894.mp4')">Minha Arma Era a Lei</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738895.mp4')">Meu Último Desejo</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738896.mp4')">Estranha Forma de Vida</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738897.mp4')">O Beco da Morte</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738898.mp4')">A Noite Em Que Voltaram Para Casa</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738899.mp4')">O Primeiro Tiro: A Lenda de Wyatt Earp</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738900.mp4')">Assassino de Aluguel</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738901.mp4')">Apache Junction – Cidade Sem Lei</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738902.mp4')">Trilha de Vingança</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738903.mp4')">Segredos de Família</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738904.mp4')">Pacto de Justiça</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738905.mp4')">Jornada Para o Inferno</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738906.mp4')">Cercados</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738907.mp4')">Tensão em Montana</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738908.mp4')">Outback</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738909.mp4')">Assassinato em Yellowstone</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738910.mp4')">A Última Fronteira do Oeste</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738911.mp4')">Trilha de Sangue</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738912.mp4')">Jovens Demais para Morrer</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738913.mp4')">God's Country</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738914.mp4')">Duas Pecadoras e Uma Mula</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738915.mp4')">Wild Bill</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738916.mp4')">Dead for a Dollar</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738917.mp4')">O Mistério de Ozarks</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738918.mp4')">Terra Violenta</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738919.mp4')">Os Imperdoáveis</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738920.mp4')">Paixão Perigosa</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738921.mp4')">A Floresta Do Escalpe</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738922.mp4')">Território Hostil</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738923.mp4')">Tombstone: A Justiça Está Chegando</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738924.mp4')">Jonah Hex: Caçador de Recompensas</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738925.mp4')">O Ouro de Mackenna</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738926.mp4')">Perseguição Mortal</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738927.mp4')">Terra Sem Lei</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738928.mp4')">Cavaleiros Desesperados</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738929.mp4')">O Grande Xerife</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738930.mp4')">O Último Selvagem</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738931.mp4')">Sete Noivas Para Sete Irmãos</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738932.mp4')">O Portal do Paraíso</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738933.mp4')">O Passado Não Perdoa</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738934.mp4')">Vingança &amp; Castigo</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738935.mp4')">Do Outro Lado da Lei</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738936.mp4')">A Vingança Está na Moda</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738937.mp4')">Enterrem Meu Coração na Curva do Rio</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738938.mp4')">Os Infratores</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738939.mp4')">Silverado</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738940.mp4')">Wyatt Earp</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738941.mp4')">Pegue a Bala</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738942.mp4')">Duelo de Titãs</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738943.mp4')">Vera Cruz</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738944.mp4')">El Dorado</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738945.mp4')">Os Jovens Pistoleiros</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738946.mp4')">Onde Começa o Inferno</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738947.mp4')">Irmãos Inimigos</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738948.mp4')">Blind Justice</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738949.mp4')">O Cavaleiro Solitário</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738950.mp4')">Xerife do Oeste</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738951.mp4')">Rio Lobo</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738952.mp4')">O Tesouro de Sierra Madre</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738953.mp4')">Quando Explode a Vingança</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738954.mp4')">Viva Django</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738955.mp4')">Django Livre</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738956.mp4')">À Procura da Vingança</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738957.mp4')">O Assassinato de Jesse James pelo Covarde Robert Ford</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738958.mp4')">O Regresso</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738959.mp4')">Mar de Fogo</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738960.mp4')">Wyatt Earp</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738961.mp4')">Tombstone A Justiça Está Chegando</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738962.mp4')">Meu Odio Sera Sua Heranca</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738963.mp4')">Abutres Humanos</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738964.mp4')">Billy The Kid: O Fora da Lei</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738965.mp4')">O Caçador de Recompensas</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738966.mp4')">Terra dos Bravos</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738967.mp4')">...E o Bravo Ficou Só</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738968.mp4')">Os Indomáveis</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738969.mp4')">Sabata</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738970.mp4')">Appaloosa</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738971.mp4')">Amaldiçoada</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738972.mp4')">A Pistola E Minha Biblia</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738973.mp4')">Sua Última Façanha</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738974.mp4')">O Rio das Almas Perdidas</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738975.mp4')">Banzé no Oeste</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738976.mp4')">A Sombra de um Revolver</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738977.mp4')">Ardida como Pimenta</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738978.mp4')">Um Punhado de Chumbo</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738979.mp4')">Três Homens em Conflito</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738980.mp4')">E Agora Me Chamam O Magnífico</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738981.mp4')">O Último Homem</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738982.mp4')">Inferno na Fronteira</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738983.mp4')">Sob o Sol do Oeste</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738984.mp4')">Resgate no Oeste</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738985.mp4')">A Balada de Buster Scruggs</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738986.mp4')">Sete Homens e um Destino</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738987.mp4')">Rapida e Mortal</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738988.mp4')">Os Oito Odiados</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738989.mp4')">Inferno no Faroeste</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738990.mp4')">Hostiles</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738991.mp4')">Gigantes em Luta</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738992.mp4')">Era Uma Vez no Mexico</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738993.mp4')">Em Busca da Justica</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738994.mp4')">Divida de Honra</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738995.mp4')">Bravura Indomita</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738996.mp4')">A Balada do Pistoleiro</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738997.mp4')">Foxter &amp; Max: Um Cachorro de Outro Mundo</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738998.mp4')">Slime</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/738999.mp4')">Em Busca do Anel Perdido</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739000.mp4')">Coração de Tinta: O Livro Mágico</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739001.mp4')">O Clube do Tesouro</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739002.mp4')">Osmose Jones</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739003.mp4')">Em Busca do Barco Perdido</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739004.mp4')">O Fantástico Sr. Raposo</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739005.mp4')">O Mágico de Oz</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739006.mp4')">Charlie: Um Cachorro Especial</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739007.mp4')">A Múmia</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739008.mp4')">Bruno e o Lobo</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739009.mp4')">Indiana Jones e A Relíquia do Destino</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739010.mp4')">Travessuras de Natal</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739011.mp4')">O Rei da Montanha</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739012.mp4')">Jim Knopf e os 13 Piratas</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739013.mp4')">Aladdin (2019)</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739014.mp4')">A Flauta Mágica</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739015.mp4')">Aventura em Legacy Peak</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739016.mp4')">Arthur e a Vingança de Maltazard</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739017.mp4')">Arthur e os Minimoys</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739018.mp4')">Em uma Terra Muito Distante… Havia um Crime</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739019.mp4')">A Pequena Sereia</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739020.mp4')">Sr. Carrinho e os Cavaleiros Templários</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739021.mp4')">Minha Babá é uma Vampira: O Filme</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739022.mp4')">Uma Viagem Extraordinária</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739023.mp4')">Scooby-Doo: O Filme</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739024.mp4')">A Menina Invisível</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739025.mp4')">Dungeons &amp; Dragons: Honra Entre Rebeldes</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739026.mp4')">A Cidade Dourada</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739027.mp4')">Os Reis da Rua Mulberry: Que Reine o Amor</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739028.mp4')">Meu Amigo Lutcha</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739029.mp4')">Tempestade</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739030.mp4')">Fantasma e CIA</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739031.mp4')">Destemida</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739032.mp4')">Uma Jornada Mágica</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739033.mp4')">As Aventuras de Tadeo e a Tábua de Esmeralda</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739034.mp4')">Scooby-Doo! Gostosuras ou Travessuras</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739035.mp4')">John e o Potrinho Mágico</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739036.mp4')">Acampamento Intergaláctico</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739037.mp4')">Lassie de Volta a Casa</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739038.mp4')">Jim Knopf e Lucas: O Maquinista</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739039.mp4')">A Maldição de Bridge Hollow</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739040.mp4')">Monster High: O Filme</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739041.mp4')">a Menina Chamada Passarinha</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739042.mp4')">A Fera</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739043.mp4')">Princesa por Acidente</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739044.mp4')">Alice no Mundo da Internet</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739045.mp4')">Kaamelott: Parte 1</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739046.mp4')">A Lenda do Cavaleiro Negro</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739047.mp4')">Passagem Secreta</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739048.mp4')">Jurassic World: Domínio</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739049.mp4')">A Irmandade do Dragão</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739050.mp4')">Uma Tia da Pesada</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739051.mp4')">Arthur &amp; Merlin: Cavaleiros de Camelot</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739052.mp4')">King</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739053.mp4')">Capitã Nova</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739054.mp4')">Um História de Amor no Campo</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739055.mp4')">Uma Segunda Chance</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739056.mp4')">Princesa Adormecida</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739057.mp4')">O Amor Sangra</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739058.mp4')">O Magico Circo de Noel</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739059.mp4')">Se Fosse Amor</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739060.mp4')">O Som das Cores</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739061.mp4')">Nosso Segredinho</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739062.mp4')">Meu Amor Por Grace</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739063.mp4')">Um Natal em Montana</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739064.mp4')">No Ritmo do Natal</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739065.mp4')">Amor Eterno</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739066.mp4')">Chef! É Natal!</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739067.mp4')">Um Amor Feito de Neve</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739068.mp4')">Conexões Perigosas</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739069.mp4')">Apenas Amigos</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739070.mp4')">Minha Família de Natal</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739071.mp4')">Romance no Ar Uma Garota Apaixonada</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739072.mp4')">Coisas do Amor</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739073.mp4')">Sintonia de Natal</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739074.mp4')">Minha Família de Natal</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739075.mp4')">Cúmplice em Fuga</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739076.mp4')">O Despertar de Uma Paixão</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739077.mp4')">Um Natal Bem Casado</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739078.mp4')">Natal em Londres</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739079.mp4')">Natal Entre Vizinhos</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739080.mp4')">#Natal</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739081.mp4')">Memórias de Natal</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739082.mp4')">Amor de Hanukkah</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739083.mp4')">Amores Solitários</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739084.mp4')">A Escolha de Summer</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739085.mp4')">Sugar Baby</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739086.mp4')">O Tesouro de Natal</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739087.mp4')">O que Acontece Depois</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739088.mp4')">Amor e Liberdade</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739089.mp4')">É Assim Que Acaba</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739090.mp4')">Touch</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739091.mp4')">Uma Nova Paixão</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739092.mp4')">Memórias Que Não Se Apagam</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739093.mp4')">É Tempo de Amar</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739094.mp4')">A Garota Francesa</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739095.mp4')">Um Amor à Altura</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739096.mp4')">Para Todos os Garotos que Já Amei</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739097.mp4')">365 Dias</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739098.mp4')">Um Crime Passional</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739099.mp4')">Avalanche do Amor</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739100.mp4')">Minha Namorada Favorita</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739101.mp4')">Outra Chance para o Amor</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739102.mp4')">Belo Desastre: O Casamento</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739103.mp4')">Como Treinar o Seu Marido</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739104.mp4')">O Salvador de Almas</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739105.mp4')">Dois Corações</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739106.mp4')">Beleza Avassaladora 2</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739107.mp4')">Parachute</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739108.mp4')">A Musa de Bonnard</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739109.mp4')">Mergulhando no Amor</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739110.mp4')">Quero Ficar Com Polly</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739111.mp4')">Jogando com o Amor</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739112.mp4')">Goyo</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739113.mp4')">Tudo em Família</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739114.mp4')">Até que as Cores Acabem</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739115.mp4')">Amor de Cinema</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739116.mp4')">Um Amor Verdadeiro</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739117.mp4')">O Sabor da Vida</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739118.mp4')">Está Tudo Bem Comigo?</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739119.mp4')">A Primeira Neve do Verão</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739120.mp4')">Meu Nome é Khan</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739121.mp4')">Entre Dois Amores</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739122.mp4')">Rivais</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739123.mp4')">Flutuar</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739124.mp4')">Uma Pitada de Amor</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739125.mp4')">A Mãe da Noiva</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739126.mp4')">Which Brings Me to You</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739127.mp4')">Turtles All the Way Down</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739128.mp4')">Uma Ideia de Você</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739129.mp4')">Lua de Mel Inusitada</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739130.mp4')">Escolhas do Coração</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739131.mp4')">Lua de Mel Inusitada</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739132.mp4')">Pais de Pets</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739133.mp4')">Falando Grego</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739134.mp4')">Uma Parede entre Nós</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739135.mp4')">O Fabricante de Lágrimas</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739136.mp4')">Como conquistar o Billy Walsh</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739137.mp4')">Música</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739138.mp4')">Um Jogo de Sedução</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739139.mp4')">A Noite Pertence aos Amantes</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739140.mp4')">Jack &amp; Jill Nos Passos do Amor</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739141.mp4')">Pedido Irlandês</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739142.mp4')">A Arte de Amar</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739143.mp4')">Vidas Passadas</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739144.mp4')">Viciados em Amor</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739145.mp4')">Pobres Criaturas</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739146.mp4')">Uma Noite no Lago</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739147.mp4')">A Força da Mulher</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739148.mp4')">O Vale do Amor</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739149.mp4')">Meu Nome é Loh Kiwan</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739150.mp4')">Não é Mais uma Canção de Amor</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739151.mp4')">O Amor Não Tem Regras</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739152.mp4')">Através da Minha Janela 3: Olhos nos Olhos</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739153.mp4')">Jogos de Amor</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739154.mp4')">Cinco Chances Para Ser Feliz</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739155.mp4')">Agência do Amor</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739156.mp4')">Upgrade: As Cores do Amor</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739157.mp4')">Cinzas</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739158.mp4')">Até Marte por Amor</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739159.mp4')">Orgulho e Compaixão</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739160.mp4')">Sol Lunar</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739161.mp4')">O Natal dos Liddle: O Casamento</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739162.mp4')">Um Romance Perfeito</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739163.mp4')">No Seu Natal ou no Meu 2</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739164.mp4')">Doce Natal</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739165.mp4')">Rodeio Rock</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739166.mp4')">The Archies</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739167.mp4')">O Natal de Costume</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739168.mp4')">O Natal dos Liddle</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739169.mp4')">Minha Família Quer que Eu Case</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739170.mp4')">Ritmo de Natal</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739171.mp4')">Construindo um Lar</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739172.mp4')">Última Chamada para Istambul</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739173.mp4')">Sweet &amp; Sour</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739174.mp4')">Nos Vemos Em Vênus</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739175.mp4')">Ao Seu Lado</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739176.mp4')">Uma Viagem para Paris</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739177.mp4')">Uma Esposa de Mentira</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739178.mp4')">Amor em Águas Turvas</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739179.mp4')">Surpresa de Amor no Natal</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739180.mp4')">Match de Natal</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739181.mp4')">Natal Para Sempre</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739182.mp4')">Um Amor de Conto de Fadas</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739183.mp4')">S.O.S. do Divórcio</div>
+<div class="movie-card" onclick="playVideo('http://dnscine.top:80/movie/145425977/847426424/739184.mp4')">Coincidências da Vida e Grandes Amores</div>
+</div>
+</section>
+<script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
+<script>
+    const player = new Plyr('#video');
+
+    function playVideo(url) {
+      const playerSection = document.getElementById('player');
+      const video = document.getElementById('video');
+
+      video.src = url;
+      video.load();
+      playerSection.style.display = 'block';
+      window.scrollTo({ top: playerSection.offsetTop - 20, behavior: 'smooth' });
+    }
+
+    function filtrarFilmes() {
+      const input = document.getElementById('searchInput').value.toLowerCase();
+      const cards = document.querySelectorAll('.movie-card');
+
+      cards.forEach(card => {
+        const title = card.textContent.toLowerCase();
+        card.style.display = title.includes(input) ? 'flex' : 'none';
+      });
+    }
+
+    window.addEventListener('load', () => {
+      const loader = document.getElementById('loader');
+      const MIN_LOADING_TIME = 2000; // 2 segundos
+      const startTime = performance.timing.navigationStart;
+      const currentTime = Date.now();
+      const elapsed = currentTime - startTime;
+
+      const hideLoader = () => {
+        loader.style.opacity = '0';
+        setTimeout(() => {
+          loader.style.display = 'none';
+        }, 700);
+      };
+
+      if (elapsed >= MIN_LOADING_TIME) {
+        hideLoader();
+      } else {
+        setTimeout(hideLoader, MIN_LOADING_TIME - elapsed);
+      }
+    });
+  </script>
+</body>
+</html>
