@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <title>Controle de Pagamento</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 50px;
+    }
+    button {
+      font-size: 18px;
+      padding: 12px 24px;
+      margin: 20px;
+      cursor: pointer;
+      border: none;
+      border-radius: 8px;
+      width: 140px;
+    }
+    .confirmar {
+      background-color: #38a169;
+      color: white;
+    }
+    .recusar {
+      background-color: #e53e3e;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <h2>Controle de Pagamento</h2>
+  <p>Clique em uma das opções para atualizar o status do pagamento:</p>
+  <button class="confirmar" onclick="setStatus('ok')">✅ Confirmar</button>
+  <button class="recusar" onclick="setStatus('erro')">❌ Recusar</button>
+
+  <script>
+    function setStatus(status) {
+      localStorage.setItem('status_pagamento', status);
+      alert(status === 'ok' ? 'Pagamento confirmado!' : 'Pagamento recusado!');
+    }
+  </script>
+</body>
+</html>
