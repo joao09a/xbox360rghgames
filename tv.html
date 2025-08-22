@@ -4,7 +4,6 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Minha TV Ao Vivo</title>
-  <!-- Layout simples: fonte grande, alto contraste e navegação por controle remoto/teclas -->
   <style>
     :root {
       --bg: #0b0f14;
@@ -49,9 +48,6 @@
       padding: 12px;
       display: flex; flex-direction: column; gap: 12px;
     }
-    .search {
-      display: flex; gap: 8px;
-    }
     input, button, .btn {
       font-size: 16px; border: none; outline: none;
       border-radius: 12px; padding: 10px 12px;
@@ -60,14 +56,14 @@
     .btn { background: #15212c; color: var(--text); cursor: pointer; }
     .btn.primary { background: var(--accent); color: #00131b; font-weight: 700; }
     .btn.success { background: var(--accent-2); color: #00150d; font-weight: 700; }
+    .btn:hover { background: #22313f; }
+    .btn:active { transform: scale(0.97); }
 
     .channels { list-style: none; padding: 0; margin: 0; overflow: auto; flex: 1; }
     .channel { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; padding: 10px; border-radius: 12px; }
-    .channel:focus { outline: 3px solid var(--accent); }
     .channel.active { background: rgba(46,170,220,.15); }
     .name { font-size: 16px; font-weight: 700; }
     .meta { font-size: 12px; color: var(--muted); word-break: break-all; }
-    .row { display: flex; gap: 8px; }
 
     .player {
       background: #000; border-radius: 16px; padding: 8px; display: grid; place-items: center;
@@ -88,29 +84,11 @@
   <div class="app" id="app">
     <header>
       <h1>Minha TV Ao Vivo</h1>
-      <div class="hint">Controles: ↑/↓ troca canal • Enter reproduz • Back/ESC para parar</div>
+      <div class="hint">Use o controle remoto: setas, OK, CH+/CH-, números, RETURN</div>
     </header>
 
     <aside class="sidebar" aria-label="Lista de canais">
-      <div class="row">
-        <button class="btn success" id="btnPlay">▶️ Reproduzir</button>
-        <button class="btn" id="btnStop">⏹️ Parar</button>
-        <button class="btn" id="btnFull">⛶ Tela cheia</button>
-      </div>
-
-      <div class="search">
-        <input id="filter" placeholder="Pesquisar canal..." />
-        <button class="btn" id="btnClear">Limpar</button>
-      </div>
-
       <ul class="channels" id="channels" tabindex="0" aria-live="polite"></ul>
-
-      <div class="row">
-        <button class="btn" id="btnAdd">＋ Adicionar</button>
-        <button class="btn" id="btnImport">📂 Importar M3U</button>
-        <button class="btn" id="btnSave">💾 Salvar</button>
-        <button class="btn" id="btnReset">🗑️ Limpar tudo</button>
-      </div>
     </aside>
 
     <main class="player">
@@ -122,44 +100,33 @@
     </main>
 
     <footer>
-      <div>💡 Dica: você pode importar uma lista <strong>.m3u</strong> com URLs HLS (.m3u8).</div>
-      <div>
-        <button class="btn primary" id="btnShare">Compartilhar/Instalar</button>
-      </div>
+      <div>💡 Importar lista <strong>.m3u</strong> está disponível no menu desktop</div>
+      <div><button class="btn primary" id="btnShare">Compartilhar</button></div>
     </footer>
   </div>
 
-  <!-- hls.js: para tocar HLS (.m3u8) em navegadores que não suportam nativamente -->
   <script src="https://cdn.jsdelivr.net/npm/hls.js@1"></script>
   <script>
-    // --- Estado ---
     const el = (id) => document.getElementById(id);
     const video = el('video');
     const listEl = el('channels');
     const statusEl = el('status');
     const infoEl = el('info');
 
-    let hls; // instância do hls.js
+    let hls;
     let channels = [];
     let selectedIndex = 0;
 
-    // Exemplos (legais) de streams de teste
     const DEFAULT_CHANNELS = [
       { name: 'Demo | Mux Test', url: 'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8' },
       { name: 'Demo | Big Buck Bunny', url: 'https://test-streams.mux.dev/bbb-abr/bbb.m3u8' }
     ];
 
-    // Carregar do localStorage
     function loadChannels() {
       try {
         const saved = JSON.parse(localStorage.getItem('mytv_channels'));
         channels = Array.isArray(saved) && saved.length ? saved : DEFAULT_CHANNELS.slice();
       } catch { channels = DEFAULT_CHANNELS.slice(); }
-    }
-
-    function saveChannels() {
-      localStorage.setItem('mytv_channels', JSON.stringify(channels));
-      toast('Canais salvos no dispositivo');
     }
 
     function toast(msg) {
@@ -169,32 +136,16 @@
     }
 
     function renderList() {
-      const q = el('filter').value.trim().toLowerCase();
       listEl.innerHTML = '';
-      channels
-        .map((c, i) => ({...c, i}))
-        .filter(c => !q || c.name.toLowerCase().includes(q) || c.url.toLowerCase().includes(q))
-        .forEach(({name, url, i}) => {
-          const li = document.createElement('li');
-          li.className = 'channel' + (i === selectedIndex ? ' active' : '');
-          li.tabIndex = 0;
-          li.dataset.index = i;
-          li.innerHTML = `
-            <div>
-              <div class="name">${escapeHtml(name)}</div>
-              <div class="meta">${escapeHtml(url)}</div>
-            </div>
-            <div class="row">
-              <button class="btn" data-action="play">▶️</button>
-              <button class="btn" data-action="edit">✏️</button>
-              <button class="btn" data-action="del">🗑️</button>
-            </div>`;
-          listEl.appendChild(li);
-        });
+      channels.forEach((c, i) => {
+        const li = document.createElement('li');
+        li.className = 'channel' + (i === selectedIndex ? ' active' : '');
+        li.dataset.index = i;
+        li.innerHTML = `<div><div class="name">${c.name}</div><div class="meta">${c.url}</div></div>`;
+        listEl.appendChild(li);
+      });
       updateInfo();
     }
-
-    function escapeHtml(s) { return s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 
     function select(index) {
       if (index < 0) index = channels.length - 1;
@@ -212,7 +163,6 @@
         hls.loadSource(url);
         hls.attachMedia(video);
         hls.on(Hls.Events.MANIFEST_PARSED, () => video.play().catch(()=>{}));
-        hls.on(Hls.Events.ERROR, (_, data) => { toast('Erro HLS: ' + data?.details); });
       } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
         video.src = url; video.play().catch(()=>{});
       } else {
@@ -235,138 +185,74 @@
       infoEl.textContent = c ? `Canal ${selectedIndex+1}/${channels.length}: ${c.name}` : '';
     }
 
-    function addChannel() {
-      const name = prompt('Nome do canal:');
-      if (!name) return;
-      const url = prompt('URL HLS (.m3u8):');
-      if (!url) return;
-      channels.push({ name, url });
-      select(channels.length - 1);
-      toast('Canal adicionado');
-    }
+    // ---- SUPORTE AO CONTROLE REMOTO ----
+    document.addEventListener("keydown", (e) => {
+      console.log("Key pressed:", e.key); // debug: veja qual tecla chega
 
-    function editChannel(i) {
-      const ch = channels[i]; if (!ch) return;
-      const name = prompt('Nome do canal:', ch.name) ?? ch.name;
-      const url = prompt('URL HLS (.m3u8):', ch.url) ?? ch.url;
-      channels[i] = { name, url };
-      renderList();
-      toast('Canal atualizado');
-    }
+      switch (e.key) {
+        case "ArrowUp":
+        case "PageUp":
+        case "ChannelUp":
+          select(selectedIndex - 1);
+          play(selectedIndex);
+          e.preventDefault();
+          break;
 
-    function delChannel(i) {
-      if (!channels[i]) return;
-      if (!confirm('Excluir este canal?')) return;
-      channels.splice(i, 1);
-      if (selectedIndex >= channels.length) selectedIndex = channels.length - 1;
-      renderList();
-      toast('Canal removido');
-    }
+        case "ArrowDown":
+        case "PageDown":
+        case "ChannelDown":
+          select(selectedIndex + 1);
+          play(selectedIndex);
+          e.preventDefault();
+          break;
 
-    function clearAll() {
-      if (!confirm('Remover todos os canais e voltar ao padrão?')) return;
-      channels = DEFAULT_CHANNELS.slice();
-      selectedIndex = 0;
-      renderList();
-      toast('Lista redefinida');
-    }
+        case "Enter":
+          play(selectedIndex);
+          e.preventDefault();
+          break;
 
-    async function importM3U() {
-      const filePicker = document.createElement('input');
-      filePicker.type = 'file';
-      filePicker.accept = '.m3u,.m3u8,.txt';
-      filePicker.onchange = async () => {
-        const file = filePicker.files?.[0]; if (!file) return;
-        const text = await file.text();
-        const parsed = parseM3U(text);
-        if (parsed.length) {
-          channels = parsed;
-          selectedIndex = 0;
-          renderList();
-          toast('Lista M3U importada');
-        } else {
-          toast('Não foi possível ler canais do arquivo');
-        }
+        case "Backspace":
+        case "Escape":
+        case "BrowserBack":
+          stop();
+          break;
+
+        case "MediaPlayPause":
+          if (video.paused) video.play(); else video.pause();
+          break;
+        case "MediaPlay":
+          video.play();
+          break;
+        case "MediaPause":
+          video.pause();
+          break;
+        case "MediaStop":
+          stop();
+          break;
+
+        default:
+          if (/^[0-9]$/.test(e.key)) {
+            const num = Number(e.key) - 1;
+            if (channels[num]) {
+              select(num);
+              play(num);
+            }
+          }
       }
-      filePicker.click();
-    }
-
-    function parseM3U(text) {
-      // Suporte simples a EXTINF + URL; ignora grupos e logos (pode ser estendido)
-      const lines = text.split(/\r?\n/);
-      const out = [];
-      let currentName = '';
-      for (let i=0;i<lines.length;i++) {
-        const line = lines[i].trim();
-        if (!line || line.startsWith('#EXTM3U')) continue;
-        if (line.startsWith('#EXTINF')) {
-          // #EXTINF:-1 tvg-id="" tvg-name="Name" group-title="Group", Display Name
-          const comma = line.indexOf(',');
-          currentName = comma >= 0 ? line.slice(comma+1).trim() : 'Canal';
-        } else if (!line.startsWith('#')) {
-          const url = line;
-          const name = currentName || `Canal ${out.length+1}`;
-          out.push({ name, url });
-          currentName = '';
-        }
-      }
-      return out;
-    }
+    });
 
     function shareOrInstall() {
-      // Compartilha a URL atual; em TVs Samsung, adicione como Favorito/Atalho pelo navegador da TV
       if (navigator.share) {
-        navigator.share({ title: document.title, text: 'Abra esta página na sua TV Samsung', url: location.href }).catch(()=>{});
+        navigator.share({ title: document.title, text: 'Abra na sua TV', url: location.href }).catch(()=>{});
       } else {
         prompt('Copie o link desta página e abra na sua TV:', location.href);
       }
     }
 
-    function goFull() {
-      if (video.requestFullscreen) video.requestFullscreen();
-      else if (video.webkitRequestFullscreen) video.webkitRequestFullscreen();
-    }
-
-    // --- Eventos UI ---
-    listEl.addEventListener('click', (e) => {
-      const item = e.target.closest('.channel');
-      if (!item) return;
-      const i = Number(item.dataset.index);
-      const action = e.target?.dataset?.action;
-      if (action === 'play') play(i);
-      else if (action === 'edit') editChannel(i);
-      else if (action === 'del') delChannel(i);
-      else { select(i); }
-    });
-
-    listEl.addEventListener('keydown', (e) => {
-      // Navegação por setas/controle remoto
-      if (['ArrowUp','ArrowDown','Enter'].includes(e.key)) e.preventDefault();
-      if (e.key === 'ArrowUp') select(selectedIndex - 1);
-      if (e.key === 'ArrowDown') select(selectedIndex + 1);
-      if (e.key === 'Enter') play(selectedIndex);
-    });
-
-    el('btnPlay').onclick = () => play();
-    el('btnStop').onclick = () => stop();
-    el('btnFull').onclick = () => goFull();
-    el('btnAdd').onclick = () => addChannel();
-    el('btnImport').onclick = () => importM3U();
-    el('btnSave').onclick = () => saveChannels();
-    el('btnReset').onclick = () => clearAll();
     el('btnShare').onclick = () => shareOrInstall();
-    el('btnClear').onclick = () => { el('filter').value = ''; renderList(); };
-    el('filter').oninput = () => renderList();
 
-    // Inicializa
     loadChannels();
     renderList();
-    listEl.focus();
-
-    // Pausa ao sair da aba (TVs às vezes minimizam)
-    document.addEventListener('visibilitychange', () => {
-      if (document.hidden) video.pause();
-    });
   </script>
 </body>
-</html>
+  </html>
