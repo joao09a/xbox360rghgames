@@ -1,121 +1,528 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>JEFT Movies TV</title>
-  <style>
-    body {
-      margin: 0;
-      background: #000;
-      color: #fff;
-      font-family: Arial, sans-serif;
-      cursor: none !important; /* esconde o mouse */
-      overflow: hidden;
-    }
-    header {
-      padding: 20px;
-      font-size: 24px;
-      font-weight: bold;
-      background: #111;
-      text-align: center;
-    }
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 15px;
-      padding: 20px;
-    }
-    .card {
-      background: #222;
-      border-radius: 12px;
-      overflow: hidden;
-      outline: none;
-      transition: transform 0.2s, border 0.2s;
-    }
-    .card img {
-      width: 100%;
-      display: block;
-    }
-    .card:focus {
-      transform: scale(1.1);
-      border: 3px solid #00d4ff;
-    }
-    video {
-      width: 100vw;
-      height: 100vh;
-      background: black;
-    }
-  </style>
+<meta charset="UTF-8">
+<title>Pac-Battle Multiplayer (Firebase)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<!-- Firebase compat libs (Realtime Database) -->
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+<style>
+body {
+  margin: 0;
+  background: black;
+  color: white;
+  font-family: Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  touch-action: manipulation;
+}
+.header {
+  width:100%;
+  padding:10px 12px;
+  display:flex;
+  gap:8px;
+  align-items:center;
+  justify-content:center;
+}
+.header input, .header button {
+  padding:8px;
+  border-radius:6px;
+  border:none;
+  font-size:14px;
+}
+.header button { background:#e50914; color:white; font-weight:bold; cursor:pointer; }
+#gameCanvas { background:#111; border:2px solid #666; margin-top:10px; }
+.controls {
+  position: fixed;
+  bottom: 10px;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 20px;
+  pointer-events: none; /* controls disabled while not in focus but we enable child elements */
+}
+.dpad, .actions { pointer-events: auto; }
+.dpad { display: grid; grid-template-columns: 60px 60px 60px; grid-template-rows: 60px 60px 60px; gap:10px; }
+.btn {
+  background: #222; border:2px solid #666; border-radius:10px;
+  display:flex; justify-content:center; align-items:center; font-size:22px; color:white; user-select:none;
+  touch-action: manipulation;
+}
+.btn:active{background:#555}
+.actions { display:grid; grid-template-columns:80px 80px; grid-template-rows:80px 80px; gap:15px; }
+.action-btn { width:70px; height:70px; border-radius:50%; display:flex; justify-content:center; align-items:center; background:#444; color:white; font-size:26px; touch-action:manipulation; }
+.action-btn.red{background:#c62828} .action-btn.blue{background:#1565c0}
+.hud { position: absolute; top: 6px; left: 8px; color: white; font-weight: bold; }
+.roomLabel { position:absolute; top:6px; right:8px; color:#ddd; font-size:14px; }
+.footer { margin-top:12px; color:#aaa; font-size:13px; }
+</style>
 </head>
 <body>
-  <header>🎬 JEFT Movies</header>
-
-  <div class="grid" id="movies">
-    <button class="card" data-src="https://www.w3schools.com/html/mov_bbb.mp4" tabindex="0">
-      <img src="https://via.placeholder.com/300x200.png?text=Filme+1" alt="Filme 1">
-    </button>
-    <button class="card" data-src="https://www.w3schools.com/html/movie.mp4" tabindex="0">
-      <img src="https://via.placeholder.com/300x200.png?text=Filme+2" alt="Filme 2">
-    </button>
+  <div class="header">
+    <button onclick="criarSala()">Criar Sala</button>
+    <input id="codigoSala" placeholder="Código da sala (4 dígitos)" maxlength="4" style="width:110px;">
+    <button onclick="entrarSala()">Entrar</button>
+    <button onclick="sairSala()" style="background:#555;margin-left:8px;">Sair</button>
   </div>
 
-  <div id="player" style="display:none;">
-    <video id="video" controls autoplay></video>
+  <div style="position:relative;">
+    <canvas id="gameCanvas" width="400" height="400"></canvas>
+    <div class="hud" id="hud">Pontos: 0 | Vidas: 3</div>
+    <div class="roomLabel" id="roomLabel">Sala: -</div>
   </div>
 
-  <script>
-    const cards = document.querySelectorAll(".card");
-    const videoEl = document.getElementById("video");
-    const player = document.getElementById("player");
-    const grid = document.getElementById("movies");
+  <div class="controls">
+    <div class="dpad">
+      <div></div>
+      <div class="btn" onclick="localMove('up')">▲</div>
+      <div></div>
+      <div class="btn" onclick="localMove('left')">◀</div>
+      <div></div>
+      <div class="btn" onclick="localMove('right')">▶</div>
+      <div></div>
+      <div class="btn" onclick="localMove('down')">▼</div>
+      <div></div>
+    </div>
 
-    let currentIndex = 0;
-    cards[currentIndex].focus();
+    <div class="actions">
+      <div class="action-btn red" onclick="localShoot()">⭕</div>
+      <div class="action-btn blue" onclick="noop()">❌</div>
+      <div class="action-btn green" onclick="noop()">🔺</div>
+      <div class="action-btn yellow" onclick="noop()">🟥</div>
+    </div>
+  </div>
 
-    // Navegação pelo controle
-    document.addEventListener("keydown", (e) => {
-      const cols = Math.floor(grid.offsetWidth / 220); // quantidade de colunas
-      switch (e.key) {
-        case "ArrowRight":
-          if (currentIndex < cards.length - 1) currentIndex++;
-          cards[currentIndex].focus();
-          break;
-        case "ArrowLeft":
-          if (currentIndex > 0) currentIndex--;
-          cards[currentIndex].focus();
-          break;
-        case "ArrowDown":
-          if (currentIndex + cols < cards.length) currentIndex += cols;
-          cards[Math.min(currentIndex, cards.length - 1)].focus();
-          break;
-        case "ArrowUp":
-          if (currentIndex - cols >= 0) currentIndex -= cols;
-          cards[currentIndex].focus();
-          break;
-        case "Enter":
-          const src = cards[currentIndex].dataset.src;
-          if (src) {
-            grid.style.display = "none";
-            player.style.display = "block";
-            videoEl.src = src;
-            videoEl.play();
-            if (videoEl.requestFullscreen) {
-              videoEl.requestFullscreen();
-            }
+  <div class="footer">Pac-Battle Multiplayer — conectado via Firebase Realtime DB</div>
+
+<script>
+// ---------------------- Configuração Firebase ----------------------
+const firebaseConfig = {
+  apiKey: "AIzaSyBJS1ilaSPaRe1m3NUE9blpa7MGiRchvvo",
+  authDomain: "youfriends2025.firebaseapp.com",
+  databaseURL: "https://youfriends2025-default-rtdb.firebaseio.com",
+  projectId: "youfriends2025",
+  storageBucket: "youfriends2025.firebasestorage.app",
+  messagingSenderId: "1025903866437",
+  appId: "1:1025903866437:web:49401c0e8edf59dd63292c"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+// ---------------------- Estado do jogo local ----------------------
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+
+let clientId = 'c_' + Math.random().toString(36).slice(2,9);
+let salaAtual = "";
+let connected = false;
+let localIgnoreDBEvents = false;
+
+let pacman = { x: 60, y: 60, size: 12, dir: 'right', speed: 2, color: 'yellow', lives: 3, score: 0 };
+let otherPlayers = {}; // {id: {x,y,dir,color,score,lives}}
+let bullets = []; // local bullets (also mirrored in DB) -> {id, x,y,dir, owner}
+let remoteBullets = {}; // bullets coming from DB: id -> {x,y,dir,owner,created}
+
+// Labirinto (mantive do seu original, com alguns ajustes de padding)
+let barriers = [
+  {x:0, y:0, width:400, height:8},
+  {x:0, y:0, width:8, height:400},
+  {x:0, y:392, width:400, height:8},
+  {x:392, y:0, width:8, height:400},
+  {x:80, y:80, width:240, height:8},
+  {x:80, y:80, width:8, height:140},
+  {x:80, y:200, width:120, height:8},
+  {x:200, y:80, width:8, height:140},
+  {x:200, y:200, width:120, height:8},
+  {x:320, y:80, width:8, height:140},
+  {x:120, y:260, width:160, height:8},
+  {x:120, y:260, width:8, height:100},
+  {x:280, y:260, width:8, height:100},
+  {x:120, y:360, width:160, height:8}
+];
+
+// ---------------------- Funções de desenho ----------------------
+function drawBarriers(){
+  ctx.fillStyle = "#b22222";
+  barriers.forEach(b => ctx.fillRect(b.x,b.y,b.width,b.height));
+}
+
+function drawPac(x,y,size,dir,color){
+  let startAngle, endAngle;
+  switch(dir){
+    case 'right': startAngle = 0.25 * Math.PI; endAngle = 1.75 * Math.PI; break;
+    case 'left':  startAngle = 1.25 * Math.PI; endAngle = 2.75 * Math.PI; break;
+    case 'up':    startAngle = 1.75 * Math.PI; endAngle = 1.25 * Math.PI; break;
+    case 'down':  startAngle = 0.75 * Math.PI; endAngle = 0.25 * Math.PI; break;
+    default: startAngle = 0.25 * Math.PI; endAngle = 1.75 * Math.PI;
+  }
+  ctx.fillStyle = color || "yellow";
+  ctx.beginPath();
+  ctx.arc(x,y,size,startAngle,endAngle,false);
+  ctx.lineTo(x,y);
+  ctx.fill();
+}
+
+function drawPlayers(){
+  // outros
+  for(let id in otherPlayers){
+    const p = otherPlayers[id];
+    if(!p) continue;
+    drawPac(p.x,p.y,p.size || 10, p.dir || 'left', p.color || '#ffccff');
+    // nome small
+    ctx.fillStyle = "#fff";
+    ctx.font = "10px Arial";
+    ctx.fillText(id === clientId ? "(Você)" : id.slice(0,4), p.x - 12, p.y - (p.size||10) - 6);
+  }
+  // draw local last so it's on top
+  drawPac(pacman.x,pacman.y,pacman.size,pacman.dir,pacman.color);
+}
+
+function drawBullets(){
+  // remote bullets
+  for(let id in remoteBullets){
+    let b = remoteBullets[id];
+    if(!b) continue;
+    ctx.fillStyle = b.owner === clientId ? "cyan" : "white";
+    ctx.beginPath();
+    ctx.arc(b.x, b.y, 4, 0, 2*Math.PI);
+    ctx.fill();
+  }
+  // local-only bullets (in case not yet mirrored)
+  bullets.forEach(b=>{
+    ctx.fillStyle = "cyan";
+    ctx.beginPath();
+    ctx.arc(b.x, b.y, 4, 0, 2*Math.PI);
+    ctx.fill();
+  });
+}
+
+// ---------------------- Colisões ----------------------
+function checkCollision(newX,newY, size= pacman.size){
+  for(let b of barriers){
+    if(newX+size > b.x && newX-size < b.x+b.width && newY+size > b.y && newY-size < b.y+b.height){
+      return true;
+    }
+  }
+  return false;
+}
+
+// Verifica colisão entre ponto e círculo
+function pointInCircle(px,py,cx,cy,r){
+  return (px-cx)*(px-cx)+(py-cy)*(py-cy) <= r*r;
+}
+
+// ---------------------- Atualizações locais e DB ----------------------
+function writePlayerToDB(){
+  if(!salaAtual) return;
+  const ref = db.ref(`games/${salaAtual}/players/${clientId}`);
+  const payload = {
+    x: Math.round(pacman.x),
+    y: Math.round(pacman.y),
+    dir: pacman.dir,
+    color: pacman.color,
+    lives: pacman.lives,
+    score: pacman.score,
+    ts: Date.now()
+  };
+  ref.set(payload);
+  // garante remoção no disconnect
+  db.ref(`games/${salaAtual}/players/${clientId}`).onDisconnect().remove();
+}
+
+function removePlayerFromDB(){
+  if(!salaAtual) return;
+  db.ref(`games/${salaAtual}/players/${clientId}`).remove();
+}
+
+// quando criar um tiro local, gravar no DB
+function pushBulletToDB(b){
+  if(!salaAtual) return;
+  const bulletsRef = db.ref(`games/${salaAtual}/bullets`);
+  // use push() para id único
+  const newRef = bulletsRef.push();
+  b.created = Date.now();
+  newRef.set(b);
+  // também removemos quando desconectar (apenas remove o que esse cliente criou? not necessary)
+  // remover automaticamente após 6s
+  setTimeout(()=> newRef.remove().catch(()=>{}), 6000);
+}
+
+// ao remover um tiro por colisão local, remover no DB também
+function removeBulletFromDB(bid){
+  if(!salaAtual || !bid) return;
+  db.ref(`games/${salaAtual}/bullets/${bid}`).remove().catch(()=>{});
+}
+
+// ---------------------- Entrada do jogador (move/shoot) ----------------------
+function localMove(direction){
+  pacman.dir = direction;
+  let nx = pacman.x, ny = pacman.y;
+  if(direction==='up') ny -= pacman.speed;
+  if(direction==='down') ny += pacman.speed;
+  if(direction==='left') nx -= pacman.speed;
+  if(direction==='right') nx += pacman.speed;
+  if(!checkCollision(nx,ny)){
+    pacman.x = nx; pacman.y = ny;
+  }
+  writePlayerToDB();
+}
+
+function localShoot(){
+  // cria tiro local e grava no DB
+  let offsetX=0, offsetY=0;
+  switch(pacman.dir){
+    case 'right': offsetX = pacman.size+4; break;
+    case 'left': offsetX = -(pacman.size+4); break;
+    case 'up': offsetY = -(pacman.size+4); break;
+    case 'down': offsetY = pacman.size+4; break;
+  }
+  const bid = 'b_' + Math.random().toString(36).slice(2,9);
+  const b = {
+    id: bid,
+    owner: clientId,
+    x: pacman.x + offsetX,
+    y: pacman.y + offsetY,
+    dir: pacman.dir,
+    speed: 6,
+    created: Date.now()
+  };
+  bullets.push(b);
+  pushBulletToDB(b);
+}
+
+// noop placeholder for other action buttons
+function noop(){}
+
+// ---------------------- DB listeners ----------------------
+let playersRefListener = null;
+let bulletsRefListener = null;
+
+function startDBListeners(){
+  if(!salaAtual) return;
+  // players
+  const pRef = db.ref(`games/${salaAtual}/players`);
+  playersRefListener = pRef.on('value', snap => {
+    const obj = snap.val() || {};
+    // update otherPlayers (exclude self)
+    otherPlayers = {};
+    for(let id in obj){
+      if(id === clientId) continue;
+      otherPlayers[id] = obj[id];
+    }
+  });
+
+  // bullets
+  const bRef = db.ref(`games/${salaAtual}/bullets`);
+  bulletsRefListener = bRef.on('value', snap => {
+    const obj = snap.val() || {};
+    remoteBullets = {};
+    for(let id in obj){
+      const b = obj[id];
+      // ensure minimal fields
+      if(!b || !b.id) continue;
+      // ignore bullets that this client created and already has locally (we still display)
+      remoteBullets[b.id] = {
+        id: b.id,
+        owner: b.owner,
+        x: b.x,
+        y: b.y,
+        dir: b.dir,
+        speed: b.speed || 6,
+        created: b.created || Date.now()
+      };
+    }
+  });
+}
+
+// remove listeners when exit
+function stopDBListeners(){
+  if(!salaAtual) return;
+  try {
+    db.ref(`games/${salaAtual}/players`).off('value');
+    db.ref(`games/${salaAtual}/bullets`).off('value');
+  } catch(e){}
+}
+
+// ---------------------- Entrar / criar sala ----------------------
+function criarSala(){
+  const codigo = Math.floor(1000 + Math.random()*9000).toString();
+  db.ref(`games/${codigo}`).set({ created: Date.now() }, () => {
+    document.getElementById('codigoSala').value = codigo;
+    entrarSala();
+  });
+}
+
+function entrarSala(){
+  const codigo = document.getElementById('codigoSala').value.trim();
+  if(codigo.length !== 4) return alert('Código inválido (4 dígitos).');
+  salaAtual = codigo;
+  document.getElementById('roomLabel').innerText = 'Sala: ' + salaAtual;
+  // write initial player to DB
+  writePlayerToDB();
+  startDBListeners();
+  connected = true;
+  // ensure onDisconnect cleanup
+  db.ref(`games/${salaAtual}/players/${clientId}`).onDisconnect().remove();
+  // also optionally clear bullets created by this client on disconnect
+  connected = true;
+  console.log('Entrou na sala', salaAtual, 'clientId', clientId);
+}
+
+function sairSala(){
+  if(!salaAtual) return;
+  stopDBListeners();
+  removePlayerFromDB();
+  // optional: remove bullets created by this client
+  db.ref(`games/${salaAtual}/bullets`).once('value', snap => {
+    const obj = snap.val()||{};
+    for(let id in obj){
+      if(obj[id].owner === clientId) db.ref(`games/${salaAtual}/bullets/${id}`).remove().catch(()=>{});
+    }
+  }).finally(()=>{
+    salaAtual = "";
+    otherPlayers = {};
+    remoteBullets = {};
+    bullets = [];
+    document.getElementById('roomLabel').innerText = 'Sala: -';
+    connected = false;
+  });
+}
+
+// ---------------------- Lógica de atualização de tiros e colisões ----------------------
+function stepBullets(delta){
+  // update local bullets (those pushed by this client)
+  for(let i = bullets.length-1; i>=0; i--){
+    let b = bullets[i];
+    if(b.dir==='up') b.y -= b.speed;
+    if(b.dir==='down') b.y += b.speed;
+    if(b.dir==='left') b.x -= b.speed;
+    if(b.dir==='right') b.x += b.speed;
+    // collision com parede
+    if(checkCollision(b.x, b.y)){
+      // remove local and attempt to remove DB entry
+      removeBulletFromDB(b.id);
+      bullets.splice(i,1);
+      continue;
+    }
+    if(b.x < 0 || b.x > canvas.width || b.y < 0 || b.y > canvas.height){
+      removeBulletFromDB(b.id);
+      bullets.splice(i,1);
+      continue;
+    }
+    // colisão com outros players (server authorative? here local detection + DB update)
+    for(let pid in otherPlayers){
+      const p = otherPlayers[pid];
+      if(pointInCircle(b.x,b.y,p.x,p.y,(p.size||10))){
+        // notify point / remove player / update score locally by writing to DB
+        // reduce life of hit player (we'll do a simple write: decrement lives)
+        const targetRef = db.ref(`games/${salaAtual}/players/${pid}`);
+        targetRef.once('value').then(snap=>{
+          const data = snap.val();
+          if(!data) return;
+          let newLives = (data.lives || 3) - 1;
+          if(newLives <= 0){
+            // remove player entry (they are "dead") - could respawn
+            db.ref(`games/${salaAtual}/players/${pid}`).remove();
+          } else {
+            db.ref(`games/${salaAtual}/players/${pid}`).update({ lives: newLives });
           }
-          break;
-        case "Backspace":
-        case "Escape":
-          // Volta para lista
-          player.style.display = "none";
-          grid.style.display = "grid";
-          videoEl.pause();
-          videoEl.src = "";
-          cards[currentIndex].focus();
-          break;
+        }).catch(()=>{});
+        // remove bullet both locally and in DB
+        removeBulletFromDB(b.id);
+        bullets.splice(i,1);
+        break;
       }
-    });
-  </script>
+    }
+    // colisão com local player (friendly fire off for own bullets)
+  }
+
+  // update remoteBullets positions locally (these are authoritative from DB's last values)
+  // But since DB only stores initial pos+dir+speed, each client needs to animate them locally.
+  // We'll advance them based on their dir and speed.
+  for(let id in remoteBullets){
+    const b = remoteBullets[id];
+    if(!b) continue;
+    switch(b.dir){
+      case 'up': b.y -= b.speed; break;
+      case 'down': b.y += b.speed; break;
+      case 'left': b.x -= b.speed; break;
+      case 'right': b.x += b.speed; break;
+    }
+    // collision with walls
+    if(checkCollision(b.x,b.y)){
+      // remove from DB to notify others
+      removeBulletFromDB(b.id);
+      delete remoteBullets[id];
+      continue;
+    }
+    // out of bounds
+    if(b.x < 0 || b.x > canvas.width || b.y < 0 || b.y > canvas.height){
+      removeBulletFromDB(b.id);
+      delete remoteBullets[id];
+      continue;
+    }
+    // hit local player?
+    if(b.owner !== clientId && pointInCircle(b.x,b.y,pacman.x,pacman.y,pacman.size)){
+      // we got hit
+      pacman.lives -= 1;
+      // update own lives to DB
+      db.ref(`games/${salaAtual}/players/${clientId}`).update({ lives: pacman.lives }).catch(()=>{});
+      // remove bullet
+      removeBulletFromDB(b.id);
+      delete remoteBullets[id];
+      // if dead, remove self (simple behavior)
+      if(pacman.lives <= 0){
+        alert('Você foi derrotado!');
+        removePlayerFromDB();
+        salaAtual = "";
+        document.getElementById('roomLabel').innerText = 'Sala: -';
+      }
+    }
+  }
+}
+
+// ---------------------- Loop principal ----------------------
+let lastTime = Date.now();
+function update(){
+  const now = Date.now();
+  const delta = now - lastTime;
+  lastTime = now;
+
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  drawBarriers();
+  drawPlayers();
+  drawBullets();
+  stepBullets(delta);
+
+  // HUD
+  document.getElementById('hud').innerText = `Pontos: ${pacman.score} | Vidas: ${pacman.lives}`;
+  requestAnimationFrame(update);
+}
+
+// ---------------------- Inicialização ----------------------
+update(); // start loop
+
+// tecla para controlar com teclado (opcional)
+document.addEventListener('keydown', e=>{
+  if(e.key === 'ArrowUp') localMove('up');
+  if(e.key === 'ArrowDown') localMove('down');
+  if(e.key === 'ArrowLeft') localMove('left');
+  if(e.key === 'ArrowRight') localMove('right');
+  if(e.key === ' ') localShoot();
+});
+
+// limpa ao fechar a aba
+window.addEventListener('beforeunload', ()=>{
+  if(salaAtual) removePlayerFromDB();
+});
+
+// se quiser forçar um join automático (debug)
+// document.getElementById('codigoSala').value = "1234";
+// entrarSala();
+
+</script>
 </body>
-  </html>
+</html>
