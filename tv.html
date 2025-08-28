@@ -120,7 +120,7 @@ let salaAtual = "";
 let connected = false;
 let localIgnoreDBEvents = false;
 
-let pacman = { x: 60, y: 60, size: 12, dir: 'right', speed: 2, color: 'yellow', lives: 3, score: 0 };
+let pacman = { x: 60, y: 60, size: 12, dir: 'right', speed: 15, color: 'yellow', lives: 3, score: 0 };
 let otherPlayers = {}; // {id: {x,y,dir,color,score,lives}}
 let bullets = []; // local bullets (also mirrored in DB) -> {id, x,y,dir, owner}
 let remoteBullets = {}; // bullets coming from DB: id -> {x,y,dir,owner,created}
