@@ -1,71 +1,84 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<title>Pac-Battle Multiplayer (Firebase)</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<!-- Firebase compat libs -->
+<meta charset="UTF-8" />
+<title>Arena Blitz – Multiplayer (Firebase)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<!-- Firebase compat (Realtime Database) -->
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 <style>
-/* --- estilos iguais ao teu --- */
-body { margin:0; background:black; color:white; font-family:Arial,sans-serif; display:flex; flex-direction:column; align-items:center; min-height:100vh; touch-action:manipulation; }
-.header{width:100%;padding:10px 12px;display:flex;gap:8px;align-items:center;justify-content:center;}
-.header input,.header button{padding:8px;border-radius:6px;border:none;font-size:14px;}
-.header button{background:#e50914;color:white;font-weight:bold;cursor:pointer;}
-#gameCanvas{background:#111;border:2px solid #666;margin-top:10px;}
-.controls{position:fixed;bottom:10px;width:100%;display:flex;justify-content:space-between;padding:0 20px;pointer-events:none;}
-.dpad,.actions{pointer-events:auto;}
-.dpad{display:grid;grid-template-columns:60px 60px 60px;grid-template-rows:60px 60px 60px;gap:10px;}
-.btn{background:#222;border:2px solid #666;border-radius:10px;display:flex;justify-content:center;align-items:center;font-size:22px;color:white;user-select:none;touch-action:manipulation;}
-.btn:active{background:#555}
-.actions{display:grid;grid-template-columns:80px 80px;grid-template-rows:80px 80px;gap:15px;}
-.action-btn{width:70px;height:70px;border-radius:50%;display:flex;justify-content:center;align-items:center;background:#444;color:white;font-size:26px;touch-action:manipulation;}
-.action-btn.red{background:#c62828}.action-btn.blue{background:#1565c0}
-.hud{position:absolute;top:6px;left:8px;color:white;font-weight:bold;}
-.roomLabel{position:absolute;top:6px;right:8px;color:#ddd;font-size:14px;}
-.footer{margin-top:12px;color:#aaa;font-size:13px;}
+  :root{
+    --bg:#0b0e14;--panel:#121826;--accent:#00d4ff;--accent2:#ff2d55;--text:#e5f0ff;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column;align-items:center;min-height:100vh}
+  .topbar{width:100%;max-width:980px;padding:10px 12px;display:flex;gap:8px;flex-wrap:wrap;justify-content:center;align-items:center}
+  .topbar input,.topbar button{padding:10px 12px;border-radius:10px;border:none;font-weight:600}
+  .topbar input{background:#0f1422;color:var(--text);outline:1px solid #22304d;min-width:160px}
+  .topbar button{background:linear-gradient(135deg,var(--accent),#4d9fff);color:#001b29;cursor:pointer}
+  .topbar button.secondary{background:#1b2338;color:#c9e8ff;outline:1px solid #22304d}
+  .wrap{position:relative;display:flex;flex-direction:column;align-items:center}
+  canvas{background:#0d1220;border:2px solid #233253;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.4)}
+  .hud{position:absolute;top:8px;left:10px;font-weight:800;text-shadow:0 2px 8px rgba(0,0,0,.6)}
+  .room{position:absolute;top:8px;right:10px;opacity:.85;font-weight:700}
+  .scoreboard{margin-top:8px;background:var(--panel);border:1px solid #22304d;border-radius:12px;padding:8px 12px;min-width:300px}
+  .controls{position:fixed;inset:auto 0 10px 0;display:flex;justify-content:space-between;padding:0 16px;pointer-events:none}
+  .dpad,.abxy{pointer-events:auto}
+  .dpad{display:grid;grid-template-columns:64px 64px 64px;grid-template-rows:64px 64px 64px;gap:10px}
+  .btn{background:#0f1629;border:2px solid #2b3c61;border-radius:14px;color:#eaf5ff;display:flex;align-items:center;justify-content:center;font-size:22px;user-select:none}
+  .btn:active{filter:brightness(1.25)}
+  .abxy{display:grid;grid-template-columns:84px 84px;grid-template-rows:84px 84px;gap:14px}
+  .ball{width:74px;height:74px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900}
+  .shoot{background:var(--accent2)}
+  .dash{background:#12d37a}
+  .msg{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,.65);padding:14px 18px;border-radius:12px;border:1px solid #28406b;display:none}
 </style>
 </head>
 <body>
-  <div class="header">
-    <button onclick="criarSala()">Criar Sala</button>
-    <input id="codigoSala" placeholder="Código da sala (4 dígitos)" maxlength="4" style="width:110px;">
-    <button onclick="entrarSala()">Entrar</button>
-    <button onclick="sairSala()" style="background:#555;margin-left:8px;">Sair</button>
+  <div class="topbar">
+    <button onclick="createRoom()">Criar sala</button>
+    <input id="roomCode" placeholder="Código (4 dígitos)" maxlength="4" />
+    <button onclick="joinRoom()">Entrar</button>
+    <button class="secondary" onclick="leaveRoom()">Sair</button>
   </div>
 
-  <div style="position:relative;">
-    <canvas id="gameCanvas" width="400" height="400"></canvas>
-    <div class="hud" id="hud">Pontos: 0 | Vidas: 3</div>
-    <div class="roomLabel" id="roomLabel">Sala: -</div>
+  <div class="wrap">
+    <canvas id="cv" width="520" height="360"></canvas>
+    <div class="hud" id="hud">HP: 3 | Kills: 0</div>
+    <div class="room" id="room">Sala: -</div>
+    <div class="msg" id="centerMsg">Você foi derrotado! Respawn em 3s…</div>
   </div>
 
+  <div class="scoreboard" id="board">
+    <strong>Placar</strong>
+    <div id="boardList"></div>
+    <div style="opacity:.7;font-size:12px;margin-top:6px">PC: WASD/Setas para mover, Mouse/Toque para mirar, Espaço ou botão vermelho para atirar, Shift/Verde para dash.</div>
+  </div>
+
+  <!-- Mobile controls -->
   <div class="controls">
     <div class="dpad">
       <div></div>
-      <div class="btn" onclick="localMove('up')">▲</div>
+      <div class="btn" ontouchstart="moveHold('up',true)" ontouchend="moveHold('up',false)">▲</div>
       <div></div>
-      <div class="btn" onclick="localMove('left')">◀</div>
+      <div class="btn" ontouchstart="moveHold('left',true)" ontouchend="moveHold('left',false)">◀</div>
       <div></div>
-      <div class="btn" onclick="localMove('right')">▶</div>
+      <div class="btn" ontouchstart="moveHold('right',true)" ontouchend="moveHold('right',false)">▶</div>
       <div></div>
-      <div class="btn" onclick="localMove('down')">▼</div>
+      <div class="btn" ontouchstart="moveHold('down',true)" ontouchend="moveHold('down',false)">▼</div>
       <div></div>
     </div>
-
-    <div class="actions">
-      <div class="action-btn red" onclick="localShoot()">⭕</div>
-      <div class="action-btn blue" onclick="noop()">❌</div>
-      <div class="action-btn green" onclick="noop()">🔺</div>
-      <div class="action-btn yellow" onclick="noop()">🟥</div>
+    <div class="abxy">
+      <div class="ball shoot" ontouchstart="shoot()">ATIRAR</div>
+      <div class="ball dash" ontouchstart="dash()">DASH</div>
+      <div></div>
+      <div></div>
     </div>
   </div>
 
-  <div class="footer">Pac-Battle Multiplayer — conectado via Firebase Realtime DB</div>
-
 <script>
-// ---------------------- Firebase ----------------------
+// =============== Firebase ==================
 const firebaseConfig = {
   apiKey: "AIzaSyBJS1ilaSPaRe1m3NUE9blpa7MGiRchvvo",
   authDomain: "youfriends2025.firebaseapp.com",
@@ -76,215 +89,243 @@ const firebaseConfig = {
   appId: "1:1025903866437:web:49401c0e8edf59dd63292c"
 };
 firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
+const rtdb = firebase.database();
 
-// ---------------------- Estado local ----------------------
-const canvas = document.getElementById("gameCanvas");
-const ctx = canvas.getContext("2d");
+// =============== Estado ================
+const cv = document.getElementById('cv');
+const cx = cv.getContext('2d');
+const hud = document.getElementById('hud');
+const roomLbl = document.getElementById('room');
+const boardList = document.getElementById('boardList');
+const centerMsg = document.getElementById('centerMsg');
 
-let clientId = 'c_' + Math.random().toString(36).slice(2,9);
-let salaAtual = "";
+const clientId = 'p_' + Math.random().toString(36).slice(2,8);
+let roomId = '';
 let connected = false;
 
-let pacman = { x: 60, y: 60, size: 12, dir: 'right', speed: 15, color: 'yellow', lives: 3, score: 0 };
-let otherPlayers = {};
-let bullets = [];
-let remoteBullets = {};
+const ARENA = { w: cv.width, h: cv.height };
 
-// Labirinto
-let barriers = [
-  {x:0, y:0, width:400, height:8},
-  {x:0, y:0, width:8, height:400},
-  {x:0, y:392, width:400, height:8},
-  {x:392, y:0, width:8, height:400},
-  {x:80, y:80, width:240, height:8},
-  {x:80, y:80, width:8, height:140},
-  {x:80, y:200, width:120, height:8},
-  {x:200, y:80, width:8, height:140},
-  {x:200, y:200, width:120, height:8},
-  {x:320, y:80, width:8, height:140},
-  {x:120, y:260, width:160, height:8},
-  {x:120, y:260, width:8, height:100},
-  {x:280, y:260, width:8, height:100},
-  {x:120, y:360, width:160, height:8}
+const me = { x: 80, y: 80, r: 12, dir: 0, speed: 2.2, color: '#ffd54a', hp: 3, kills: 0, dashCD: 0 };
+let players = {}; // other players
+let bullets = {}; // all bullets from DB {id:{x,y,dx,dy,owner,spd}}
+
+// paredes simples
+const walls = [
+  {x:10,y:10,w:ARENA.w-20,h:8}, {x:10,y:ARENA.h-18,w:ARENA.w-20,h:8},
+  {x:10,y:10,w:8,h:ARENA.h-20}, {x:ARENA.w-18,y:10,w:8,h:ARENA.h-20},
+  {x:130,y:60,w:260,h:10}, {x:130,y:60,w:10,h:120}, {x:380,y:60,w:10,h:120},
+  {x:130,y:170,w:260,h:10}, {x:130,y:230,w:260,h:10},
+  {x:130,y:230,w:10,h:80}, {x:380,y:230,w:10,h:80}, {x:130,y:310,w:260,h:10}
 ];
 
-// ---------------------- Respawn ----------------------
-function respawnPlayer(){
-  pacman.x = 60;
-  pacman.y = 60;
-  pacman.lives = 3; // volta com vidas cheias
-  writePlayerToDB();
+// =============== Utils ================
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+function circleRectCollide(cx0,cy0,r, rx,ry,rw,rh){
+  const nx = clamp(cx0, rx, rx+rw); const ny = clamp(cy0, ry, ry+rh);
+  const dx = cx0-nx, dy = cy0-ny; return (dx*dx+dy*dy) <= r*r;
+}
+function randomSpawn(){
+  const spots=[{x:60,y:60},{x:ARENA.w-60,y:60},{x:60,y:ARENA.h-60},{x:ARENA.w-60,y:ARENA.h-60},{x:ARENA.w/2,y:ARENA.h/2}];
+  return spots[(Math.random()*spots.length)|0];
 }
 
-// ---------------------- Funções desenho ----------------------
-function drawBarriers(){ ctx.fillStyle="#b22222"; barriers.forEach(b=>ctx.fillRect(b.x,b.y,b.width,b.height)); }
-function drawPac(x,y,size,dir,color){
-  let startAngle,endAngle;
-  switch(dir){
-    case 'right': startAngle=0.25*Math.PI; endAngle=1.75*Math.PI; break;
-    case 'left': startAngle=1.25*Math.PI; endAngle=2.75*Math.PI; break;
-    case 'up': startAngle=1.75*Math.PI; endAngle=1.25*Math.PI; break;
-    case 'down': startAngle=0.75*Math.PI; endAngle=0.25*Math.PI; break;
-    default: startAngle=0.25*Math.PI; endAngle=1.75*Math.PI;
-  }
-  ctx.fillStyle=color||"yellow";
-  ctx.beginPath();
-  ctx.arc(x,y,size,startAngle,endAngle,false);
-  ctx.lineTo(x,y);
-  ctx.fill();
+// =============== DB helpers ================
+function writeMe(){
+  if(!roomId) return;
+  const ref = rtdb.ref(`rooms/${roomId}/players/${clientId}`);
+  ref.set({ x:Math.round(me.x), y:Math.round(me.y), dir:me.dir, color:me.color, hp:me.hp, kills:me.kills, t:Date.now() });
+  ref.onDisconnect().remove();
 }
-function drawPlayers(){
-  for(let id in otherPlayers){
-    const p=otherPlayers[id];
-    if(!p) continue;
-    drawPac(p.x,p.y,p.size||10,p.dir||'left',p.color||'#ffccff');
-    ctx.fillStyle="#fff"; ctx.font="10px Arial";
-    ctx.fillText(id===clientId?"(Você)":id.slice(0,4), p.x-12, p.y-(p.size||10)-6);
-  }
-  drawPac(pacman.x,pacman.y,pacman.size,pacman.dir,pacman.color);
+function pushBullet(b){
+  if(!roomId) return; const ref = rtdb.ref(`rooms/${roomId}/bullets`).push();
+  ref.set(b); // auto id
+  // remover após 5s
+  setTimeout(()=> ref.remove().catch(()=>{}), 5000);
 }
-function drawBullets(){
-  for(let id in remoteBullets){
-    let b=remoteBullets[id];
-    if(!b) continue;
-    ctx.fillStyle=b.owner===clientId?"cyan":"white";
-    ctx.beginPath(); ctx.arc(b.x,b.y,4,0,2*Math.PI); ctx.fill();
-  }
-  bullets.forEach(b=>{
-    ctx.fillStyle="cyan";
-    ctx.beginPath(); ctx.arc(b.x,b.y,4,0,2*Math.PI); ctx.fill();
+function removeBullet(id){ if(roomId) rtdb.ref(`rooms/${roomId}/bullets/${id}`).remove().catch(()=>{}); }
+
+// =============== Sala ================
+function createRoom(){
+  const code = (Math.floor(1000+Math.random()*9000)).toString();
+  rtdb.ref(`rooms/${code}`).set({created:Date.now()}).then(()=>{
+    document.getElementById('roomCode').value=code; joinRoom();
   });
 }
+function joinRoom(){
+  const code = (document.getElementById('roomCode').value||'').trim();
+  if(code.length!==4) return alert('Código inválido (4 dígitos).');
+  roomId = code; roomLbl.textContent = `Sala: ${roomId}`; connected = true;
+  players = {}; bullets = {};
+  startListeners();
+  const sp = randomSpawn(); me.x=sp.x; me.y=sp.y; me.hp=3; me.kills=0; writeMe();
+}
+function leaveRoom(){
+  if(!roomId) return; stopListeners();
+  rtdb.ref(`rooms/${roomId}/players/${clientId}`).remove();
+  roomId=''; connected=false; roomLbl.textContent='Sala: -';
+}
 
-// ---------------------- Colisões ----------------------
-function checkCollision(newX,newY,size=pacman.size){
-  for(let b of barriers){
-    if(newX+size>b.x && newX-size<b.x+b.width && newY+size>b.y && newY-size<b.y+b.height) return true;
-  }
-  return false;
-}
-function pointInCircle(px,py,cx,cy,r){ return (px-cx)*(px-cx)+(py-cy)*(py-cy)<=r*r; }
-
-// ---------------------- DB ----------------------
-function writePlayerToDB(){
-  if(!salaAtual) return;
-  const ref=db.ref(`games/${salaAtual}/players/${clientId}`);
-  ref.set({x:Math.round(pacman.x), y:Math.round(pacman.y), dir:pacman.dir, color:pacman.color, lives:pacman.lives, score:pacman.score, ts:Date.now()});
-  db.ref(`games/${salaAtual}/players/${clientId}`).onDisconnect().remove();
-}
-function removePlayerFromDB(){ if(salaAtual) db.ref(`games/${salaAtual}/players/${clientId}`).remove(); }
-function pushBulletToDB(b){
-  if(!salaAtual) return;
-  const newRef=db.ref(`games/${salaAtual}/bullets`).push();
-  b.created=Date.now(); newRef.set(b);
-  setTimeout(()=>newRef.remove().catch(()=>{}),6000);
-}
-function removeBulletFromDB(bid){ if(salaAtual&&bid) db.ref(`games/${salaAtual}/bullets/${bid}`).remove().catch(()=>{}); }
-
-// ---------------------- Movimento / tiros ----------------------
-function localMove(direction){
-  pacman.dir=direction;
-  let nx=pacman.x, ny=pacman.y;
-  if(direction==='up') ny-=pacman.speed;
-  if(direction==='down') ny+=pacman.speed;
-  if(direction==='left') nx-=pacman.speed;
-  if(direction==='right') nx+=pacman.speed;
-  if(!checkCollision(nx,ny)){ pacman.x=nx; pacman.y=ny; }
-  writePlayerToDB();
-}
-function localShoot(){
-  let offsetX=0, offsetY=0;
-  switch(pacman.dir){ case 'right': offsetX=pacman.size+4; break; case 'left': offsetX=-(pacman.size+4); break; case 'up': offsetY=-(pacman.size+4); break; case 'down': offsetY=pacman.size+4; break; }
-  const bid='b_'+Math.random().toString(36).slice(2,9);
-  const b={id:bid, owner:clientId, x:pacman.x+offsetX, y:pacman.y+offsetY, dir:pacman.dir, speed:6, created:Date.now()};
-  bullets.push(b); pushBulletToDB(b);
-}
-function noop(){}
-
-// ---------------------- DB listeners ----------------------
-function startDBListeners(){
-  if(!salaAtual) return;
-  db.ref(`games/${salaAtual}/players`).on('value',snap=>{
-    const obj=snap.val()||{}; otherPlayers={};
-    for(let id in obj){ if(id!==clientId) otherPlayers[id]=obj[id]; }
+let playersOn=null, bulletsOn=null;
+function startListeners(){
+  stopListeners();
+  playersOn = rtdb.ref(`rooms/${roomId}/players`).on('value',snap=>{
+    const obj=snap.val()||{}; players={};
+    Object.keys(obj).forEach(id=>{ if(id!==clientId) players[id]=obj[id]; });
+    renderBoard(obj);
   });
-  db.ref(`games/${salaAtual}/bullets`).on('value',snap=>{
-    const obj=snap.val()||{}; remoteBullets={};
-    for(let id in obj){ const b=obj[id]; if(b&&b.id) remoteBullets[b.id]={...b}; }
+  bulletsOn = rtdb.ref(`rooms/${roomId}/bullets`).on('value',snap=>{
+    const obj=snap.val()||{}; // map by child key but each bullet carries {x,y,dx,dy,spd,owner}
+    // keep by their DB keys to allow remove
+    bullets = {};
+    Object.keys(obj).forEach(key=>{ bullets[key]=obj[key]; bullets[key]._key=key; });
   });
 }
-function stopDBListeners(){ if(salaAtual){ db.ref(`games/${salaAtual}/players`).off('value'); db.ref(`games/${salaAtual}/bullets`).off('value'); } }
-
-// ---------------------- Sala ----------------------
-function criarSala(){ const codigo=Math.floor(1000+Math.random()*9000).toString(); db.ref(`games/${codigo}`).set({created:Date.now()},()=>{document.getElementById('codigoSala').value=codigo; entrarSala();}); }
-function entrarSala(){
-  const codigo=document.getElementById('codigoSala').value.trim();
-  if(codigo.length!==4) return alert('Código inválido (4 dígitos).');
-  salaAtual=codigo; document.getElementById('roomLabel').innerText='Sala: '+salaAtual;
-  writePlayerToDB(); startDBListeners(); connected=true;
-  db.ref(`games/${salaAtual}/players/${clientId}`).onDisconnect().remove();
-}
-function sairSala(){
-  if(!salaAtual) return;
-  stopDBListeners(); removePlayerFromDB();
-  db.ref(`games/${salaAtual}/bullets`).once('value',snap=>{
-    const obj=snap.val()||{}; for(let id in obj){ if(obj[id].owner===clientId) db.ref(`games/${salaAtual}/bullets/${id}`).remove().catch(()=>{}); }
-  }).finally(()=>{ salaAtual=""; otherPlayers={}; remoteBullets={}; bullets=[]; document.getElementById('roomLabel').innerText='Sala: -'; connected=false; });
+function stopListeners(){
+  try{ rtdb.ref(`rooms/${roomId}/players`).off('value'); }catch(e){}
+  try{ rtdb.ref(`rooms/${roomId}/bullets`).off('value'); }catch(e){}
 }
 
-// ---------------------- Lógica balas ----------------------
-function stepBullets(delta){
-  for(let i=bullets.length-1;i>=0;i--){
-    let b=bullets[i];
-    if(b.dir==='up') b.y-=b.speed;
-    if(b.dir==='down') b.y+=b.speed;
-    if(b.dir==='left') b.x-=b.speed;
-    if(b.dir==='right') b.x+=b.speed;
-    if(checkCollision(b.x,b.y) || b.x<0||b.x>canvas.width||b.y<0||b.y>canvas.height){ removeBulletFromDB(b.id); bullets.splice(i,1); continue; }
-    for(let pid in otherPlayers){
-      const p=otherPlayers[pid];
-      if(pointInCircle(b.x,b.y,p.x,p.y,(p.size||10))){
-        const targetRef=db.ref(`games/${salaAtual}/players/${pid}`);
-        targetRef.once('value').then(snap=>{
-          const data=snap.val(); if(!data) return;
-          let newLives=(data.lives||3)-1;
-          if(newLives<=0){ db.ref(`games/${salaAtual}/players/${pid}`).update({ lives:0 }); }
-          else { db.ref(`games/${salaAtual}/players/${pid}`).update({ lives:newLives }); }
-        });
-        removeBulletFromDB(b.id); bullets.splice(i,1); break;
-      }
-    }
-  }
-  for(let id in remoteBullets){
-    const b=remoteBullets[id]; if(!b) continue;
-    switch(b.dir){case 'up':b.y-=b.speed;break;case 'down':b.y+=b.speed;break;case 'left':b.x-=b.speed;break;case 'right':b.x+=b.speed;break;}
-    if(checkCollision(b.x,b.y)||b.x<0||b.x>canvas.width||b.y<0||b.y>canvas.height){ removeBulletFromDB(b.id); delete remoteBullets[id]; continue; }
-    if(b.owner!==clientId && pointInCircle(b.x,b.y,pacman.x,pacman.y,pacman.size)){
-      pacman.lives-=1;
-      db.ref(`games/${salaAtual}/players/${clientId}`).update({ lives:pacman.lives }).catch(()=>{});
-      removeBulletFromDB(b.id); delete remoteBullets[id];
-      if(pacman.lives<=0){
-        alert('Você foi derrotado! Respawn em 3 segundos...');
-        setTimeout(()=>{ respawnPlayer(); },3000);
-      }
-    }
-  }
+// =============== Controles ================
+let keys = {};
+let aim = {x:0,y:0};
+let holding = {up:false,down:false,left:false,right:false};
+
+function moveHold(dir,on){ holding[dir]=on; }
+
+document.addEventListener('keydown',e=>{
+  keys[e.key.toLowerCase()] = true;
+  if(e.code==='Space') shoot();
+  if(e.key==='Shift') dash();
+});
+document.addEventListener('keyup',e=>{ keys[e.key.toLowerCase()] = false; });
+
+// mouse/touch para mirar
+cv.addEventListener('mousemove', e=>{ const r=cv.getBoundingClientRect(); aim.x=e.clientX-r.left; aim.y=e.clientY-r.top; me.dir = Math.atan2(aim.y-me.y, aim.x-me.x); });
+cv.addEventListener('mousedown', e=> shoot());
+cv.addEventListener('touchstart', e=>{
+  const t=e.touches[0]; const r=cv.getBoundingClientRect(); aim.x=t.clientX-r.left; aim.y=t.clientY-r.top; me.dir=Math.atan2(aim.y-me.y, aim.x-me.x);
+});
+
+function dash(){ if(me.dashCD>0) return; const d=me.dir; me.x+=Math.cos(d)*36; me.y+=Math.sin(d)*36; me.dashCD=60; }
+
+function shoot(){
+  if(!roomId) return;
+  // direção: se mouse já definiu, usa me.dir; senão usa WASD/última
+  const d = me.dir;
+  const bx = me.x + Math.cos(d)*(me.r+6);
+  const by = me.y + Math.sin(d)*(me.r+6);
+  const spd = 4.0;
+  const b = { x:bx, y:by, dx:Math.cos(d), dy:Math.sin(d), spd:spd, owner:clientId, t:Date.now() };
+  pushBullet(b);
 }
 
-// ---------------------- Loop ----------------------
-let lastTime=Date.now();
+// =============== Game loop ================
 function update(){
-  const now=Date.now(); const delta=now-lastTime; lastTime=now;
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-  drawBarriers(); drawPlayers(); drawBullets(); stepBullets(delta);
-  document.getElementById('hud').innerText=`Pontos: ${pacman.score} | Vidas: ${pacman.lives}`;
-  requestAnimationFrame(update);
-}
-update();
+  // movimento PC
+  const up = keys['w']||keys['arrowup']||holding.up;
+  const down = keys['s']||keys['arrowdown']||holding.down;
+  const left = keys['a']||keys['arrowleft']||holding.left;
+  const right = keys['d']||keys['arrowright']||holding.right;
 
-document.addEventListener('keydown',e=>{ if(e.key==='ArrowUp')localMove('up'); if(e.key==='ArrowDown')localMove('down'); if(e.key==='ArrowLeft')localMove('left'); if(e.key==='ArrowRight')localMove('right'); if(e.key===' ')localShoot(); });
-window.addEventListener('beforeunload',()=>{ if(salaAtual) removePlayerFromDB(); });
+  let vx = (right?1:0) - (left?1:0);
+  let vy = (down?1:0) - (up?1:0);
+  const mag = Math.hypot(vx,vy)||1; vx/=mag; vy/=mag;
+
+  // aplicar velocidade e colisões simples com paredes
+  let nx = me.x + vx*me.speed*2.2;
+  let ny = me.y + vy*me.speed*2.2;
+  // margens
+  nx = clamp(nx, 12, ARENA.w-12); ny = clamp(ny, 12, ARENA.h-12);
+  // colisão com paredes
+  const willHit = walls.some(w=> circleRectCollide(nx,ny,me.r, w.x,w.y,w.w,w.h));
+  if(!willHit){ me.x=nx; me.y=ny; }
+
+  if(me.dashCD>0) me.dashCD--;
+
+  // atualizar HUD
+  hud.textContent = `HP: ${me.hp} | Kills: ${me.kills}`;
+  if(connected) writeMe();
+}
+
+function render(){
+  cx.clearRect(0,0,cv.width,cv.height);
+  // grid leve
+  cx.globalAlpha=0.15; cx.strokeStyle="#4da3ff"; cx.lineWidth=1; cx.beginPath();
+  for(let x=0;x<cv.width;x+=20){ cx.moveTo(x,0); cx.lineTo(x,cv.height);} for(let y=0;y<cv.height;y+=20){ cx.moveTo(0,y); cx.lineTo(cv.width,y);} cx.stroke(); cx.globalAlpha=1;
+
+  // paredes
+  cx.fillStyle = '#1a2642'; walls.forEach(w=> cx.fillRect(w.x,w.y,w.w,w.h));
+
+  // jogadores remotos
+  Object.keys(players).forEach(id=>{
+    const p=players[id]; if(!p) return;
+    drawPlayer(p.x,p.y,12, p.color||'#82eaff', id.slice(0,4));
+  });
+
+  // eu
+  drawPlayer(me.x,me.y,me.r, me.color, 'Você');
+
+  // balas (client-side animação)
+  Object.keys(bullets).forEach(k=>{
+    const b=bullets[k];
+    // avançar
+    b.x += b.dx*b.spd; b.y += b.dy*b.spd;
+    // desenhar
+    cx.fillStyle = (b.owner===clientId)?'#00ffff':'#ffffff';
+    cx.beginPath(); cx.arc(b.x,b.y,3.5,0,Math.PI*2); cx.fill();
+
+    // colisão com paredes/bordas
+    if(b.x<6||b.x>ARENA.w-6||b.y<6||b.y>ARENA.h-6 || walls.some(w=> b.x>w.x && b.x<w.x+w.w && b.y>w.y && b.y<w.y+w.h)){
+      removeBullet(b._key); delete bullets[k]; return;
+    }
+
+    // acerto em mim
+    if(b.owner!==clientId){
+      const dx=b.x-me.x, dy=b.y-me.y; if(dx*dx+dy*dy <= (me.r+3.5)*(me.r+3.5)){
+        me.hp -= 1; removeBullet(b._key); delete bullets[k];
+        if(me.hp<=0){
+          showCenterMsg(true);
+          setTimeout(()=>{ // respawn
+            const sp=randomSpawn(); me.x=sp.x; me.y=sp.y; me.hp=3; showCenterMsg(false); writeMe();
+          },3000);
+        } else { writeMe(); }
+      }
+    }
+
+    // (opcional) dano em players remotos – simples: decrementar hp no DB se eu for o dono da bala
+    if(b.owner===clientId){
+      Object.keys(players).forEach(pid=>{
+        const p=players[pid]; if(!p||p.hp<=0) return; const dx=b.x-p.x, dy=b.y-p.y; if(dx*dx+dy*dy<= (12+3.5)*(12+3.5)){
+          // aplicar dano atômico (best effort; sem regras de segurança avançadas)
+          const pref = rtdb.ref(`rooms/${roomId}/players/${pid}`);
+          pref.get().then(s=>{ const d=s.val(); if(!d) return; const nhp=Math.max(0, (d.hp||3)-1); pref.update({hp:nhp}); if(nhp===0){ me.kills++; writeMe(); } });
+          removeBullet(b._key); delete bullets[k];
+        }
+      });
+    }
+  });
+}
+
+function drawPlayer(x,y,r,color,label){
+  // corpo
+  cx.fillStyle=color; cx.beginPath(); cx.arc(x,y,r,0,Math.PI*2); cx.fill();
+  // direção (olhinho)
+  cx.fillStyle='#00121a'; cx.beginPath(); cx.arc(x+Math.cos(me.dir)*6, y+Math.sin(me.dir)*6, 2.5, 0, Math.PI*2); cx.fill();
+  // label
+  cx.fillStyle='#cfe9ff'; cx.font='10px system-ui'; cx.textAlign='center';
+  cx.fillText(label, x, y - r - 8);
+}
+
+function loop(){ update(); render(); requestAnimationFrame(loop); }
+requestAnimationFrame(loop);
+
+function renderBoard(all){
+  const arr = Object.entries(all||{}).map(([id,p])=>({name:id===clientId?"Você":id.slice(0,4), kills:p.kills||0}));
+  arr.sort((a,b)=>b.kills-a.kills);
+  boardList.innerHTML = arr.map(r=>`<div style="display:flex;gap:8px;justify-content:space-between"><span>${r.name}</span><span>⚔️ ${r.kills}</span></div>`).join('');
+}
+
+function showCenterMsg(on){ centerMsg.style.display = on? 'block':'none'; }
 </script>
 </body>
-      </html>
+</html>
