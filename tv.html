@@ -1,84 +1,48 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8" />
-<title>Arena Blitz – Multiplayer (Firebase)</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<!-- Firebase compat (Realtime Database) -->
+<meta charset="utf-8" />
+<title>Capture The Flag - Multiplayer (Firebase)</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+<!-- Firebase compat -->
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 <style>
-  :root{
-    --bg:#0b0e14;--panel:#121826;--accent:#00d4ff;--accent2:#ff2d55;--text:#e5f0ff;
-  }
+  :root{--bg:#071228;--panel:#0e1b34;--red:#ff4b5c;--blue:#3fb1ff;--text:#dff3ff}
   *{box-sizing:border-box}
-  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column;align-items:center;min-height:100vh}
-  .topbar{width:100%;max-width:980px;padding:10px 12px;display:flex;gap:8px;flex-wrap:wrap;justify-content:center;align-items:center}
-  .topbar input,.topbar button{padding:10px 12px;border-radius:10px;border:none;font-weight:600}
-  .topbar input{background:#0f1422;color:var(--text);outline:1px solid #22304d;min-width:160px}
-  .topbar button{background:linear-gradient(135deg,var(--accent),#4d9fff);color:#001b29;cursor:pointer}
-  .topbar button.secondary{background:#1b2338;color:#c9e8ff;outline:1px solid #22304d}
-  .wrap{position:relative;display:flex;flex-direction:column;align-items:center}
-  canvas{background:#0d1220;border:2px solid #233253;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.4)}
-  .hud{position:absolute;top:8px;left:10px;font-weight:800;text-shadow:0 2px 8px rgba(0,0,0,.6)}
-  .room{position:absolute;top:8px;right:10px;opacity:.85;font-weight:700}
-  .scoreboard{margin-top:8px;background:var(--panel);border:1px solid #22304d;border-radius:12px;padding:8px 12px;min-width:300px}
-  .controls{position:fixed;inset:auto 0 10px 0;display:flex;justify-content:space-between;padding:0 16px;pointer-events:none}
-  .dpad,.abxy{pointer-events:auto}
-  .dpad{display:grid;grid-template-columns:64px 64px 64px;grid-template-rows:64px 64px 64px;gap:10px}
-  .btn{background:#0f1629;border:2px solid #2b3c61;border-radius:14px;color:#eaf5ff;display:flex;align-items:center;justify-content:center;font-size:22px;user-select:none}
-  .btn:active{filter:brightness(1.25)}
-  .abxy{display:grid;grid-template-columns:84px 84px;grid-template-rows:84px 84px;gap:14px}
-  .ball{width:74px;height:74px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900}
-  .shoot{background:var(--accent2)}
-  .dash{background:#12d37a}
-  .msg{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,.65);padding:14px 18px;border-radius:12px;border:1px solid #28406b;display:none}
+  body{margin:0;font-family:Inter,system-ui,Arial;background:var(--bg);color:var(--text);display:flex;flex-direction:column;align-items:center;min-height:100vh}
+  .top{width:100%;max-width:980px;padding:10px;display:flex;gap:8px;align-items:center;justify-content:center}
+  input,button{padding:8px 12px;border-radius:8px;border:none}
+  button{cursor:pointer}
+  canvas{background:#071a2a;border-radius:10px;border:2px solid #12314b}
+  .hud{margin-top:8px;display:flex;gap:12px;align-items:center}
+  .teamBadge{padding:6px 10px;border-radius:999px;font-weight:700}
+  .board{margin-top:10px;background:var(--panel);padding:10px;border-radius:8px;width:520px}
+  .controls{margin-top:8px;font-size:13px;color:#a8d6ff}
+  .msg{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,.6);padding:12px 16px;border-radius:10px;display:none}
 </style>
 </head>
 <body>
-  <div class="topbar">
+  <div class="top">
     <button onclick="createRoom()">Criar sala</button>
-    <input id="roomCode" placeholder="Código (4 dígitos)" maxlength="4" />
+    <input id="roomCode" placeholder="Código 4 dígitos" maxlength="4" />
     <button onclick="joinRoom()">Entrar</button>
-    <button class="secondary" onclick="leaveRoom()">Sair</button>
+    <button onclick="leaveRoom()">Sair</button>
+    <div style="margin-left:10px">Seu ID: <span id="pid"></span></div>
   </div>
 
-  <div class="wrap">
-    <canvas id="cv" width="520" height="360"></canvas>
-    <div class="hud" id="hud">HP: 3 | Kills: 0</div>
-    <div class="room" id="room">Sala: -</div>
-    <div class="msg" id="centerMsg">Você foi derrotado! Respawn em 3s…</div>
+  <canvas id="cv" width="720" height="440"></canvas>
+  <div class="hud">
+    <div id="teamBadge" class="teamBadge">Time: -</div>
+    <div id="scoreBoard">Placar — Red: 0 | Blue: 0</div>
+    <div style="margin-left:10px">Controles: WASD/Setas mover • Espaço tag • Mouse tocar para mirar</div>
   </div>
 
-  <div class="scoreboard" id="board">
-    <strong>Placar</strong>
-    <div id="boardList"></div>
-    <div style="opacity:.7;font-size:12px;margin-top:6px">PC: WASD/Setas para mover, Mouse/Toque para mirar, Espaço ou botão vermelho para atirar, Shift/Verde para dash.</div>
-  </div>
-
-  <!-- Mobile controls -->
-  <div class="controls">
-    <div class="dpad">
-      <div></div>
-      <div class="btn" ontouchstart="moveHold('up',true)" ontouchend="moveHold('up',false)">▲</div>
-      <div></div>
-      <div class="btn" ontouchstart="moveHold('left',true)" ontouchend="moveHold('left',false)">◀</div>
-      <div></div>
-      <div class="btn" ontouchstart="moveHold('right',true)" ontouchend="moveHold('right',false)">▶</div>
-      <div></div>
-      <div class="btn" ontouchstart="moveHold('down',true)" ontouchend="moveHold('down',false)">▼</div>
-      <div></div>
-    </div>
-    <div class="abxy">
-      <div class="ball shoot" ontouchstart="shoot()">ATIRAR</div>
-      <div class="ball dash" ontouchstart="dash()">DASH</div>
-      <div></div>
-      <div></div>
-    </div>
-  </div>
+  <div class="board" id="board">Placar detalhado</div>
+  <div class="msg" id="centerMsg">Mensagem</div>
 
 <script>
-// =============== Firebase ==================
+// -------- Firebase config (substitua se quiser) --------
 const firebaseConfig = {
   apiKey: "AIzaSyBJS1ilaSPaRe1m3NUE9blpa7MGiRchvvo",
   authDomain: "youfriends2025.firebaseapp.com",
@@ -89,243 +53,171 @@ const firebaseConfig = {
   appId: "1:1025903866437:web:49401c0e8edf59dd63292c"
 };
 firebase.initializeApp(firebaseConfig);
-const rtdb = firebase.database();
+const db = firebase.database();
 
-// =============== Estado ================
+// -------- Estado local --------
 const cv = document.getElementById('cv');
 const cx = cv.getContext('2d');
-const hud = document.getElementById('hud');
-const roomLbl = document.getElementById('room');
-const boardList = document.getElementById('boardList');
+const teamBadge = document.getElementById('teamBadge');
+const scoreBoard = document.getElementById('scoreBoard');
+const board = document.getElementById('board');
 const centerMsg = document.getElementById('centerMsg');
 
-const clientId = 'p_' + Math.random().toString(36).slice(2,8);
+const clientId = 'u_' + Math.random().toString(36).slice(2,8);
+document.getElementById('pid').innerText = clientId;
 let roomId = '';
 let connected = false;
 
-const ARENA = { w: cv.width, h: cv.height };
+const ARENA = {w: cv.width, h: cv.height};
 
-const me = { x: 80, y: 80, r: 12, dir: 0, speed: 2.2, color: '#ffd54a', hp: 3, kills: 0, dashCD: 0 };
-let players = {}; // other players
-let bullets = {}; // all bullets from DB {id:{x,y,dx,dy,owner,spd}}
+// Bases e flags
+const baseRed = {x:80,y:ARENA.h/2};
+const baseBlue = {x:ARENA.w-80,y:ARENA.h/2};
 
-// paredes simples
-const walls = [
-  {x:10,y:10,w:ARENA.w-20,h:8}, {x:10,y:ARENA.h-18,w:ARENA.w-20,h:8},
-  {x:10,y:10,w:8,h:ARENA.h-20}, {x:ARENA.w-18,y:10,w:8,h:ARENA.h-20},
-  {x:130,y:60,w:260,h:10}, {x:130,y:60,w:10,h:120}, {x:380,y:60,w:10,h:120},
-  {x:130,y:170,w:260,h:10}, {x:130,y:230,w:260,h:10},
-  {x:130,y:230,w:10,h:80}, {x:380,y:230,w:10,h:80}, {x:130,y:310,w:260,h:10}
-];
+// player local
+let me = {x: baseRed.x+40, y: baseRed.y, r:12, color:'#ff7b86', team:'red', carrying:false, alive:true, respawnTimer:0, score:0};
+let others = {};
+let flags = { red: {atBase:true, carriedBy:null, x:baseRed.x, y:baseRed.y}, blue:{atBase:true, carriedBy:null, x:baseBlue.x, y:baseBlue.y} };
+let scores = { red:0, blue:0 };
 
-// =============== Utils ================
+// walls (simple obstacles)
+const walls=[{x:240,y:40,w:20,h:120},{x:460,y:280,w:20,h:120},{x:300,y:200,w:120,h:20}];
+
+// -------- Utils --------
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
-function circleRectCollide(cx0,cy0,r, rx,ry,rw,rh){
-  const nx = clamp(cx0, rx, rx+rw); const ny = clamp(cy0, ry, ry+rh);
-  const dx = cx0-nx, dy = cy0-ny; return (dx*dx+dy*dy) <= r*r;
-}
-function randomSpawn(){
-  const spots=[{x:60,y:60},{x:ARENA.w-60,y:60},{x:60,y:ARENA.h-60},{x:ARENA.w-60,y:ARENA.h-60},{x:ARENA.w/2,y:ARENA.h/2}];
-  return spots[(Math.random()*spots.length)|0];
-}
+function dist(a,b,c,d){ return Math.hypot(a-c,b-d); }
+function showMsg(t){ centerMsg.innerText=t; centerMsg.style.display='block'; setTimeout(()=>centerMsg.style.display='none',2000); }
 
-// =============== DB helpers ================
-function writeMe(){
-  if(!roomId) return;
-  const ref = rtdb.ref(`rooms/${roomId}/players/${clientId}`);
-  ref.set({ x:Math.round(me.x), y:Math.round(me.y), dir:me.dir, color:me.color, hp:me.hp, kills:me.kills, t:Date.now() });
-  ref.onDisconnect().remove();
-}
-function pushBullet(b){
-  if(!roomId) return; const ref = rtdb.ref(`rooms/${roomId}/bullets`).push();
-  ref.set(b); // auto id
-  // remover após 5s
-  setTimeout(()=> ref.remove().catch(()=>{}), 5000);
-}
-function removeBullet(id){ if(roomId) rtdb.ref(`rooms/${roomId}/bullets/${id}`).remove().catch(()=>{}); }
+// -------- Database helpers --------
+function writeMe(){ if(!roomId) return; db.ref(`ctf/${roomId}/players/${clientId}`).set({x:Math.round(me.x),y:Math.round(me.y),team:me.team,carrying:me.carrying||false,alive:me.alive,score:me.score,t:Date.now()}); db.ref(`ctf/${roomId}/players/${clientId}`).onDisconnect().remove(); }
 
-// =============== Sala ================
-function createRoom(){
-  const code = (Math.floor(1000+Math.random()*9000)).toString();
-  rtdb.ref(`rooms/${code}`).set({created:Date.now()}).then(()=>{
-    document.getElementById('roomCode').value=code; joinRoom();
-  });
-}
-function joinRoom(){
-  const code = (document.getElementById('roomCode').value||'').trim();
-  if(code.length!==4) return alert('Código inválido (4 dígitos).');
-  roomId = code; roomLbl.textContent = `Sala: ${roomId}`; connected = true;
-  players = {}; bullets = {};
-  startListeners();
-  const sp = randomSpawn(); me.x=sp.x; me.y=sp.y; me.hp=3; me.kills=0; writeMe();
-}
-function leaveRoom(){
-  if(!roomId) return; stopListeners();
-  rtdb.ref(`rooms/${roomId}/players/${clientId}`).remove();
-  roomId=''; connected=false; roomLbl.textContent='Sala: -';
-}
+function writeFlag(flagKey, payload){ if(!roomId) return; db.ref(`ctf/${roomId}/flags/${flagKey}`).set(payload); }
 
-let playersOn=null, bulletsOn=null;
-function startListeners(){
-  stopListeners();
-  playersOn = rtdb.ref(`rooms/${roomId}/players`).on('value',snap=>{
-    const obj=snap.val()||{}; players={};
-    Object.keys(obj).forEach(id=>{ if(id!==clientId) players[id]=obj[id]; });
-    renderBoard(obj);
-  });
-  bulletsOn = rtdb.ref(`rooms/${roomId}/bullets`).on('value',snap=>{
-    const obj=snap.val()||{}; // map by child key but each bullet carries {x,y,dx,dy,spd,owner}
-    // keep by their DB keys to allow remove
-    bullets = {};
-    Object.keys(obj).forEach(key=>{ bullets[key]=obj[key]; bullets[key]._key=key; });
-  });
-}
-function stopListeners(){
-  try{ rtdb.ref(`rooms/${roomId}/players`).off('value'); }catch(e){}
-  try{ rtdb.ref(`rooms/${roomId}/bullets`).off('value'); }catch(e){}
-}
+function writeScore(){ if(!roomId) return; db.ref(`ctf/${roomId}/score`).set(scores); }
 
-// =============== Controles ================
+function createRoom(){ const code = (Math.floor(1000+Math.random()*9000)).toString(); roomId = code; db.ref(`ctf/${roomId}`).set({created:Date.now()}).then(()=>{ document.getElementById('roomCode').value=code; joinRoom(); }); }
+
+function joinRoom(){ const code = (document.getElementById('roomCode').value||'').trim(); if(code.length!==4) return alert('Código inválido'); roomId = code; connected=true; setupListeners(); assignTeamAndSpawn(); }
+
+function leaveRoom(){ if(!roomId) return; connected=false; teardownListeners(); db.ref(`ctf/${roomId}/players/${clientId}`).remove(); roomId=''; showMsg('Saiu da sala'); }
+
+let playersOn=null, flagsOn=null, scoreOn=null;
+function setupListeners(){ teardownListeners(); playersOn = db.ref(`ctf/${roomId}/players`).on('value',snap=>{ const obj = snap.val()||{}; others={}; Object.keys(obj).forEach(id=>{ if(id!==clientId) others[id]=obj[id]; }); renderBoard(obj); }); flagsOn = db.ref(`ctf/${roomId}/flags`).on('value',snap=>{ const obj = snap.val()||{}; flags.red = obj.red || flags.red; flags.blue = obj.blue || flags.blue; }); scoreOn = db.ref(`ctf/${roomId}/score`).on('value',snap=>{ const s = snap.val(); if(s) scores=s; });
+  // ensure flags exist
+  db.ref(`ctf/${roomId}/flags`).once('value').then(s=>{ if(!s.exists()){ writeFlag('red',flags.red); writeFlag('blue',flags.blue); writeScore(); } });
+}
+function teardownListeners(){ try{ db.ref(`ctf/${roomId}/players`).off('value'); db.ref(`ctf/${roomId}/flags`).off('value'); db.ref(`ctf/${roomId}/score`).off('value'); }catch(e){} }
+
+// -------- Team assignment & spawn --------
+function assignTeamAndSpawn(){ db.ref(`ctf/${roomId}/players`).once('value').then(snap=>{ const obj = snap.val()||{}; // balance teams
+    let reds=0, blues=0; Object.keys(obj).forEach(id=>{ if(obj[id].team==='red') reds++; if(obj[id].team==='blue') blues++; });
+    me.team = (blues<reds)?'blue':'red'; me.color = me.team==='red' ? '#ff7b86' : '#73d0ff';
+    const base = me.team==='red'? baseRed : baseBlue; me.x = base.x + (me.team==='red'?40:-40); me.y = base.y; me.carrying=false; me.alive=true; me.respawnTimer=0; me.score=0; teamBadge.innerText = `Time: ${me.team.toUpperCase()}`; teamBadge.style.background = me.team==='red'? '#3b0f12' : '#052534'; teamBadge.style.color = me.team==='red'? '#ffb6bf' : '#cfefff'; writeMe(); }); }
+
+// -------- Gameplay logic --------
 let keys = {};
-let aim = {x:0,y:0};
-let holding = {up:false,down:false,left:false,right:false};
-
-function moveHold(dir,on){ holding[dir]=on; }
-
-document.addEventListener('keydown',e=>{
-  keys[e.key.toLowerCase()] = true;
-  if(e.code==='Space') shoot();
-  if(e.key==='Shift') dash();
-});
+document.addEventListener('keydown',e=>{ keys[e.key.toLowerCase()] = true; if(e.code==='Space') attemptTag(); });
 document.addEventListener('keyup',e=>{ keys[e.key.toLowerCase()] = false; });
+cv.addEventListener('mousedown',e=>{ attemptTag(); });
 
-// mouse/touch para mirar
-cv.addEventListener('mousemove', e=>{ const r=cv.getBoundingClientRect(); aim.x=e.clientX-r.left; aim.y=e.clientY-r.top; me.dir = Math.atan2(aim.y-me.y, aim.x-me.x); });
-cv.addEventListener('mousedown', e=> shoot());
-cv.addEventListener('touchstart', e=>{
-  const t=e.touches[0]; const r=cv.getBoundingClientRect(); aim.x=t.clientX-r.left; aim.y=t.clientY-r.top; me.dir=Math.atan2(aim.y-me.y, aim.x-me.x);
-});
-
-function dash(){ if(me.dashCD>0) return; const d=me.dir; me.x+=Math.cos(d)*36; me.y+=Math.sin(d)*36; me.dashCD=60; }
-
-function shoot(){
-  if(!roomId) return;
-  // direção: se mouse já definiu, usa me.dir; senão usa WASD/última
-  const d = me.dir;
-  const bx = me.x + Math.cos(d)*(me.r+6);
-  const by = me.y + Math.sin(d)*(me.r+6);
-  const spd = 4.0;
-  const b = { x:bx, y:by, dx:Math.cos(d), dy:Math.sin(d), spd:spd, owner:clientId, t:Date.now() };
-  pushBullet(b);
-}
-
-// =============== Game loop ================
-function update(){
-  // movimento PC
-  const up = keys['w']||keys['arrowup']||holding.up;
-  const down = keys['s']||keys['arrowdown']||holding.down;
-  const left = keys['a']||keys['arrowleft']||holding.left;
-  const right = keys['d']||keys['arrowright']||holding.right;
-
-  let vx = (right?1:0) - (left?1:0);
-  let vy = (down?1:0) - (up?1:0);
-  const mag = Math.hypot(vx,vy)||1; vx/=mag; vy/=mag;
-
-  // aplicar velocidade e colisões simples com paredes
-  let nx = me.x + vx*me.speed*2.2;
-  let ny = me.y + vy*me.speed*2.2;
-  // margens
-  nx = clamp(nx, 12, ARENA.w-12); ny = clamp(ny, 12, ARENA.h-12);
-  // colisão com paredes
-  const willHit = walls.some(w=> circleRectCollide(nx,ny,me.r, w.x,w.y,w.w,w.h));
-  if(!willHit){ me.x=nx; me.y=ny; }
-
-  if(me.dashCD>0) me.dashCD--;
-
-  // atualizar HUD
-  hud.textContent = `HP: ${me.hp} | Kills: ${me.kills}`;
-  if(connected) writeMe();
-}
-
-function render(){
-  cx.clearRect(0,0,cv.width,cv.height);
-  // grid leve
-  cx.globalAlpha=0.15; cx.strokeStyle="#4da3ff"; cx.lineWidth=1; cx.beginPath();
-  for(let x=0;x<cv.width;x+=20){ cx.moveTo(x,0); cx.lineTo(x,cv.height);} for(let y=0;y<cv.height;y+=20){ cx.moveTo(0,y); cx.lineTo(cv.width,y);} cx.stroke(); cx.globalAlpha=1;
-
-  // paredes
-  cx.fillStyle = '#1a2642'; walls.forEach(w=> cx.fillRect(w.x,w.y,w.w,w.h));
-
-  // jogadores remotos
-  Object.keys(players).forEach(id=>{
-    const p=players[id]; if(!p) return;
-    drawPlayer(p.x,p.y,12, p.color||'#82eaff', id.slice(0,4));
-  });
-
-  // eu
-  drawPlayer(me.x,me.y,me.r, me.color, 'Você');
-
-  // balas (client-side animação)
-  Object.keys(bullets).forEach(k=>{
-    const b=bullets[k];
-    // avançar
-    b.x += b.dx*b.spd; b.y += b.dy*b.spd;
-    // desenhar
-    cx.fillStyle = (b.owner===clientId)?'#00ffff':'#ffffff';
-    cx.beginPath(); cx.arc(b.x,b.y,3.5,0,Math.PI*2); cx.fill();
-
-    // colisão com paredes/bordas
-    if(b.x<6||b.x>ARENA.w-6||b.y<6||b.y>ARENA.h-6 || walls.some(w=> b.x>w.x && b.x<w.x+w.w && b.y>w.y && b.y<w.y+w.h)){
-      removeBullet(b._key); delete bullets[k]; return;
-    }
-
-    // acerto em mim
-    if(b.owner!==clientId){
-      const dx=b.x-me.x, dy=b.y-me.y; if(dx*dx+dy*dy <= (me.r+3.5)*(me.r+3.5)){
-        me.hp -= 1; removeBullet(b._key); delete bullets[k];
-        if(me.hp<=0){
-          showCenterMsg(true);
-          setTimeout(()=>{ // respawn
-            const sp=randomSpawn(); me.x=sp.x; me.y=sp.y; me.hp=3; showCenterMsg(false); writeMe();
-          },3000);
-        } else { writeMe(); }
+function attemptTag(){ if(!me.alive) return; // tag players nearby from opposite team
+  // tagging range
+  const range = 20;
+  // check others from DB (we have local copy in others)
+  for(const id in others){ const p = others[id]; if(p.team && p.team!==me.team && p.alive){ const d = dist(me.x,me.y,p.x,p.y); if(d<=range){ // hit
+        // reduce opponent: simple approach — set them dead in DB; they will respawn
+        db.ref(`ctf/${roomId}/players/${id}`).update({alive:false});
+        // if opponent carried flag, drop it
+        if(flags.red.carriedBy===id) { flags.red = {atBase:false,carriedBy:null,x:p.x,y:p.y}; writeFlag('red',flags.red); }
+        if(flags.blue.carriedBy===id) { flags.blue = {atBase:false,carriedBy:null,x:p.x,y:p.y}; writeFlag('blue',flags.blue); }
+        // optionally award nothing, attacker stays alive
       }
+  }} }
+
+function updateGame(){ if(!connected) return; // movement
+  if(me.alive){ let vx=0, vy=0; if(keys['w']||keys['arrowup']) vy-=1; if(keys['s']||keys['arrowdown']) vy+=1; if(keys['a']||keys['arrowleft']) vx-=1; if(keys['d']||keys['arrowright']) vx+=1; const mag = Math.hypot(vx,vy)||1; vx/=mag; vy/=mag; const speed = 2.2; let nx = me.x + vx*speed; let ny = me.y + vy*speed; nx = clamp(nx, 12, ARENA.w-12); ny = clamp(ny, 12, ARENA.h-12);
+    // wall collisions
+    const hits = walls.some(w=> circleRect(me.x,me.y,me.r, w.x,w.y,w.w,w.h));
+    const willHit = walls.some(w=> circleRect(nx,ny,me.r, w.x,w.y,w.w,w.h));
+    if(!willHit){ me.x = nx; me.y = ny; }
+
+    // picking up flags
+    // if near enemy flag and flag is atBase or dropped, pick up
+    const enemyFlagKey = me.team==='red' ? 'blue' : 'red';
+    const enemyFlag = flags[enemyFlagKey];
+    if(enemyFlag){ const d = dist(me.x,me.y, enemyFlag.x, enemyFlag.y); if(d<20 && !enemyFlag.carriedBy){ // pick up
+        enemyFlag.carriedBy = clientId; enemyFlag.atBase=false; writeFlag(enemyFlagKey, enemyFlag); me.carrying = true; writeMe(); showMsg('Você pegou a bandeira inimiga!'); }
     }
 
-    // (opcional) dano em players remotos – simples: decrementar hp no DB se eu for o dono da bala
-    if(b.owner===clientId){
-      Object.keys(players).forEach(pid=>{
-        const p=players[pid]; if(!p||p.hp<=0) return; const dx=b.x-p.x, dy=b.y-p.y; if(dx*dx+dy*dy<= (12+3.5)*(12+3.5)){
-          // aplicar dano atômico (best effort; sem regras de segurança avançadas)
-          const pref = rtdb.ref(`rooms/${roomId}/players/${pid}`);
-          pref.get().then(s=>{ const d=s.val(); if(!d) return; const nhp=Math.max(0, (d.hp||3)-1); pref.update({hp:nhp}); if(nhp===0){ me.kills++; writeMe(); } });
-          removeBullet(b._key); delete bullets[k];
-        }
-      });
+    // score: if carrying enemy flag and reaches own base
+    const base = me.team==='red' ? baseRed : baseBlue;
+    if(me.carrying){ const d = dist(me.x,me.y, base.x, base.y); if(d<24){ // score!
+        // increment team score, reset enemy flag to base
+        const enemy = me.team==='red' ? 'blue' : 'red'; scores[me.team] = (scores[me.team]||0)+1; writeScore(); flags[enemy] = {atBase:true,carriedBy:null,x: (enemy==='red'? baseRed.x: baseBlue.x), y:(enemy==='red'? baseRed.y: baseBlue.y)}; writeFlag(enemy, flags[enemy]); me.carrying=false; me.score++; writeMe(); showMsg('PONTO!'); }
     }
-  });
+  }
+
+  // if dead, handle respawn timer locally
+  if(!me.alive){ me.respawnTimer = (me.respawnTimer||0)+1; if(me.respawnTimer>90){ // ~1.5s at 60fps
+      // respawn at team base
+      const base = me.team==='red'? baseRed: baseBlue; me.x = base.x + (me.team==='red'?40:-40); me.y = base.y; me.alive=true; me.respawnTimer=0; me.carrying=false; writeMe(); showMsg('Respawn'); }
+  }
+
+  // if carrying flag but got killed (server side) — ensure flag dropped on DB (we will check flags state)
+  if(me.carrying && !me.alive){ const enemy = me.team==='red'? 'blue':'red'; flags[enemy] = {atBase:false,carriedBy:null,x:me.x, y:me.y}; writeFlag(enemy, flags[enemy]); me.carrying=false; }
+
+  // update visuals scoreboard
+  scoreBoard.innerText = `Placar — Red: ${scores.red||0} | Blue: ${scores.blue||0}`;
+  writeMe();
 }
 
-function drawPlayer(x,y,r,color,label){
-  // corpo
-  cx.fillStyle=color; cx.beginPath(); cx.arc(x,y,r,0,Math.PI*2); cx.fill();
-  // direção (olhinho)
-  cx.fillStyle='#00121a'; cx.beginPath(); cx.arc(x+Math.cos(me.dir)*6, y+Math.sin(me.dir)*6, 2.5, 0, Math.PI*2); cx.fill();
-  // label
-  cx.fillStyle='#cfe9ff'; cx.font='10px system-ui'; cx.textAlign='center';
-  cx.fillText(label, x, y - r - 8);
+function circleRect(cx,cy,r, rx,ry,rw,rh){ const nx = clamp(cx,rx,rx+rw); const ny = clamp(cy,ry,ry+rh); const dx = cx-nx; const dy = cy-ny; return (dx*dx+dy*dy) <= r*r; }
+
+// -------- Render --------
+function render(){ cx.clearRect(0,0,ARENA.w,ARENA.h);
+  // floor
+  cx.fillStyle='#042438'; cx.fillRect(0,0,ARENA.w,ARENA.h);
+  // bases
+  cx.fillStyle='#33060a'; cx.beginPath(); cx.arc(baseRed.x, baseRed.y, 36,0,Math.PI*2); cx.fill(); cx.fillStyle= '#06273a'; cx.beginPath(); cx.arc(baseBlue.x, baseBlue.y, 36,0,Math.PI*2); cx.fill();
+  // flags
+  // red flag
+  drawFlag(flags.red, 'red'); drawFlag(flags.blue,'blue');
+  // walls
+  cx.fillStyle='#123149'; walls.forEach(w=> cx.fillRect(w.x,w.y,w.w,w.h));
+  // other players
+  for(const id in others){ const p = others[id]; drawPlayer(p.x,p.y, p.team==='red'?'#ff8b95':'#8fd8ff', id); }
+  // me
+  drawPlayer(me.x,me.y, me.color, 'Você' + (me.carrying? ' (carregando)':''));
+  // board update
+  renderBoardSimple();
 }
 
-function loop(){ update(); render(); requestAnimationFrame(loop); }
-requestAnimationFrame(loop);
-
-function renderBoard(all){
-  const arr = Object.entries(all||{}).map(([id,p])=>({name:id===clientId?"Você":id.slice(0,4), kills:p.kills||0}));
-  arr.sort((a,b)=>b.kills-a.kills);
-  boardList.innerHTML = arr.map(r=>`<div style="display:flex;gap:8px;justify-content:space-between"><span>${r.name}</span><span>⚔️ ${r.kills}</span></div>`).join('');
+function drawFlag(flagObj, key){ if(!flagObj) return; const isRed = key==='red'; const fx = flagObj.x; const fy = flagObj.y; cx.save(); cx.translate(fx,fy); cx.fillStyle = isRed? '#ff4b5c':'#3fb1ff'; cx.fillRect(-6,-14,12,20); cx.beginPath(); cx.moveTo(6,-14); cx.lineTo(22,-6); cx.lineTo(6,2); cx.closePath(); cx.fill(); cx.restore();
 }
 
-function showCenterMsg(on){ centerMsg.style.display = on? 'block':'none'; }
+function drawPlayer(x,y,color,label){ cx.fillStyle=color; cx.beginPath(); cx.arc(x,y,12,0,Math.PI*2); cx.fill(); cx.fillStyle='#001222'; cx.beginPath(); cx.arc(x+5,y-3,3,0,Math.PI*2); cx.fill(); cx.fillStyle='#dff3ff'; cx.font='11px system-ui'; cx.textAlign='center'; cx.fillText(label, x, y-18); }
+
+function renderBoardSimple(){ // detailed scoreboard
+  const lines = [];
+  // me
+  lines.push(`<div style="display:flex;justify-content:space-between"><strong>Você (${me.team})</strong><span>${me.score}</span></div>`);
+  for(const id in others){ const p = others[id]; lines.push(`<div style="display:flex;justify-content:space-between"><span>${id.slice(0,6)} (${p.team||'?'})</span><span>${p.score||0}</span></div>`); }
+  board.innerHTML = lines.join(''); }
+
+// -------- Loop --------
+function gameLoop(){ updateGame(); render(); requestAnimationFrame(gameLoop); }
+requestAnimationFrame(gameLoop);
+
+// -------- Helpers to interact with flags/DB from listeners --------
+// ensure when DB flags change and a carriedBy is set to a player id that equals me, update me.carrying
+
+// -------- Endpoints for debugging/test --------
+window.createRoom = createRoom; window.joinRoom = joinRoom; window.leaveRoom = leaveRoom;
+
+// -------- Explanation: listeners handle DB updates for players, flags, score --------
+// We'll keep this simple: players are authoritative from clients; when tagging we update opponent alive false in DB;
+// flags state is written to DB when picked/dropped/scored. This is a prototype - for production a server authoritative
+// approach and security rules are necessary.
 </script>
 </body>
 </html>
