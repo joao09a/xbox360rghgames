@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jogos Xbox 360 RGH</title>
+<style>
+    body {
+        margin: 0;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        color: #fff;
+        background-color: #000;
+        overflow-x: hidden;
+    }
+
+    body::before {
+        content: "";
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(0,255,0,0.15) 0%, rgba(0,0,0,0.9) 80%);
+        animation: moveBg 10s linear infinite;
+        z-index: -1;
+    }
+
+    @keyframes moveBg {
+        0% { transform: translate(0, 0); }
+        50% { transform: translate(-25%, -25%); }
+        100% { transform: translate(0, 0); }
+    }
+
+    header {
+        background: rgba(0, 0, 0, 0.8);
+        text-align: center;
+        padding: 30px 10px;
+        border-bottom: 2px solid #00ff00;
+    }
+
+    header img {
+        width: 200px;
+        display: block;
+        margin: 0 auto 10px auto;
+        filter: drop-shadow(0 0 15px #00ff00);
+    }
+
+    header h1 {
+        font-size: 2em;
+        color: #00ff00;
+        text-shadow: 0 0 15px #00ff00;
+        margin: 0;
+    }
+
+    nav {
+        background-color: rgba(0, 0, 0, 0.9);
+        text-align: center;
+        padding: 10px 0;
+        border-bottom: 1px solid #00ff00;
+    }
+
+    nav a {
+        color: #00ff00;
+        text-decoration: none;
+        margin: 0 15px;
+        font-weight: bold;
+        transition: 0.3s;
+    }
+
+    nav a:hover {
+        color: #fff;
+        text-shadow: 0 0 10px #00ff00;
+    }
+
+    .content {
+        max-width: 900px;
+        margin: 40px auto;
+        padding: 20px;
+        background: rgba(0, 0, 0, 0.6);
+        border-radius: 15px;
+        box-shadow: 0 0 15px rgba(0,255,0,0.3);
+    }
+
+    .search-bar {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+
+    .search-bar input {
+        width: 80%;
+        max-width: 400px;
+        padding: 12px 15px;
+        border: 2px solid #00ff00;
+        border-radius: 8px;
+        background-color: #000;
+        color: #00ff00;
+        font-size: 1em;
+        outline: none;
+        box-shadow: 0 0 10px rgba(0,255,0,0.3);
+        transition: 0.3s;
+    }
+
+    .search-bar input:focus {
+        box-shadow: 0 0 20px #00ff00;
+    }
+
+    .post {
+        margin-bottom: 40px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid rgba(0,255,0,0.3);
+    }
+
+    .post h2 {
+        color: #00ff00;
+        text-shadow: 0 0 10px #00ff00;
+    }
+
+    .post p {
+        line-height: 1.6;
+    }
+
+    .download-btn {
+        display: inline-block;
+        padding: 12px 25px;
+        margin-top: 10px;
+        background: linear-gradient(90deg, #00ff00, #006600);
+        color: #000;
+        font-weight: bold;
+        border-radius: 8px;
+        text-decoration: none;
+        transition: 0.3s;
+        box-shadow: 0 0 15px #00ff00;
+    }
+
+    .download-btn:hover {
+        background: linear-gradient(90deg, #00cc00, #003300);
+        color: #fff;
+        box-shadow: 0 0 25px #00ff00;
+    }
+
+    .game-img {
+        width: 100%;
+        max-width: 500px;
+        border-radius: 10px;
+        margin: 15px 0;
+        box-shadow: 0 0 15px rgba(0,255,0,0.3);
+        transition: 0.3s;
+    }
+
+    .game-img:hover {
+        transform: scale(1.05);
+        box-shadow: 0 0 25px rgba(0,255,0,0.6);
+    }
+
+    footer {
+        text-align: center;
+        padding: 20px;
+        background-color: rgba(0,0,0,0.8);
+        border-top: 2px solid #00ff00;
+        color: #00ff00;
+        margin-top: 40px;
+    }
+</style>
+</head>
+<body>
+
+<header>
+    <img src="https://i.postimg.cc/bvskdXJ2/images-7.jpg" alt="Logo Xbox 360">
+    <h1>Jogos Xbox 360 RGH</h1>
+</header>
+
+<nav>
+    <a href="#">Home</a>
+    <a href="#jogos">Jogos</a>
+    <a href="#">Dashboards</a>
+    <a href="#">Apps</a>
+    <a href="#">Contato</a>
+    <a href="#Android">Android</a>
+</nav>
+
+<div id="jogos" class="content">
+    <!-- ... (seu conteúdo de jogos permanece igual) ... -->
+</div>
+
+<footer>
+    © 2025 Jogos Xbox 360 RGH - Todos os direitos reservados.<br><br>
+    <a href="https://t.me/xbox360rghgames" class="download-btn" target="_blank">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/8/82/Telegram_logo.svg" 
+             alt="Telegram" style="width:22px; vertical-align:middle; margin-right:8px;">
+        Entrar no Grupo do Telegram
+    </a>
+</footer>
+
+<!-- Script da Pesquisa -->
+<script>
+document.getElementById("searchInput").addEventListener("keyup", function() {
+    const input = this.value.toLowerCase();
+    const posts = document.querySelectorAll(".post");
+    posts.forEach(post => {
+        const title = post.querySelector("h2").textContent.toLowerCase();
+        post.style.display = title.includes(input) ? "" : "none";
+    });
+});
+</script>
+
+<!-- 🎵 Música de fundo -->
+<audio autoplay loop hidden>
+  <!-- Se o MP3 estiver na mesma pasta do index.html -->
+  <source src="musica.mp3" type="audio/mpeg">
+
+  <!-- OU use o link direto do GitHub se preferir -->
+  <!-- <source src="https://raw.githubusercontent.com/SEU-USUARIO/SEU-REPOSITORIO/main/musica.mp3" type="audio/mpeg"> -->
+
+  Seu navegador não suporta áudio.
+</audio>
+
+</body>
+</html>
