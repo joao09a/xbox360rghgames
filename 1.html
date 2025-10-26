@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Jogo Tiro 3D - Visual Lindo (Android)</title>
+  <style>
+    :root{--ui-bg:rgba(9,11,14,0.6);--accent:#0b74ff;--glass:rgba(255,255,255,0.06)}
+    html,body{height:100%;margin:0;font-family:Inter,system-ui,Roboto,Arial;background:#07060a;color:#fff;overscroll-behavior:none}
+    canvas{display:block;width:100%;height:100%}
+    #hud{position:fixed;left:12px;right:12px;top:12px;z-index:20;display:flex;justify-content:space-between;align-items:center;pointer-events:none}
+    .panel{pointer-events:auto;background:var(--ui-bg);backdrop-filter:blur(6px);padding:8px 12px;border-radius:12px;display:flex;gap:12px;align-items:center}
+    #crosshair{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:22px;height:22px;z-index:18;pointer-events:none}
+    #crosshair:before,#crosshair:after{content:'';position:absolute;background:linear-gradient(90deg,rgba(255,255,255,0.95),rgba(255,255,255,0.25))}
+    #crosshair:before{width:2px;height:22px}
+    #crosshair:after{height:2px;width:22px}
+    #left-joystick,#shoot-btn{position:fixed;z-index:19;pointer-events:auto}
+    #left-joystick{left:18px;bottom:24px;width:130px;height:130px}
+    #shoot-btn{right:18px;bottom:34px;width:84px;height:84px;border-radius:999px;background:var(--accent);display:flex;align-items:center;justify-content:center;box-shadow:0 10px 30px rgba(11,116,255,0.18);font-weight:700;color:#fff}
+    #startBtn{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:22;padding:14px 18px;border-radius:12px;background:var(--accent);border:none;color:#fff;font-size:16px}
+    #overlay{position:fixed;left:0;top:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;z-index:21}
+    #info{position:fixed;left:12px;bottom:12px;z-index:20;font-size:13px}
+    .tiny{font-size:12px;opacity:0.9}
+  </style>
+</head>
+<body>
+  <div id="hud">
+    <div class="panel"><div>Vida: <strong id="health">100</strong></div><div class="tiny">FPS: <span id="fps">0</span></div></div>
+    <div class="panel"><div>Inimigos: <strong id="enemies">0</strong></div></div>
+  </div>
+  <div id="crosshair"></div>
+
+  <!-- joystick container -->
+  <canvas id="left-joystick"></canvas>
+  <div id="shoot-btn">Tiro</div>
+
+  <div id="overlay"><div class="panel">Toque em iniciar para ativar controles de toque. Arraste à direita para girar a câmera. Use joystick à esquerda para mover.</div></div>
+  <button id="startBtn">Iniciar</button>
+  <div id="info">Melhor em Android Chrome. Toque e segure o botão tiro para rajada.</div>
+
+  <script type="module">
+    import * as THREE from 'https://unpkg.com/three@0.153.0/build/three.module.js';
+    import { OrbitControls } from 'https://unpkg.com/three@0.153.0/examples/jsm/controls/OrbitControls.js';
+    import { GLTFLoader } from 'https://unpkg.com/three@0.153.0/examples/jsm/loaders/GLTFLoader.js';
+    import { EffectComposer } from 'https://unpkg.com/three@0.153.0/examples/jsm/postprocessing/EffectComposer.js';
+    import { RenderPass } from 'https://unpkg.com/three@0.153.0/examples/jsm/postprocessing/RenderPass.js';
+    import { UnrealBloomPass } from 'https://unpkg.com/three@0.153.0/examples/jsm/postprocessing/UnrealBloomPass.js';
+    import { SMAAPass } from 'https://unpkg.com/three@0.153.0/examples/jsm/postprocessing/SMAAPass.js';
+
+    // --- cena ---
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x07060a);
+
+    const camera = new THREE.PerspectiveCamera(70, innerWidth/innerHeight, 0.1, 1000);
+    camera.position.set(0,1.75,4);
+
+    const renderer = new THREE.WebGLRenderer({antialias:true, alpha:false, powerPreference:'high-performance'});
+    renderer.setSize(innerWidth, innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+    renderer.outputEncoding = THREE.sRGBEncoding;
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    document.body.appendChild(renderer.domElement);
+
+    // luzes cinematográficas
+    const hemi = new THREE.HemisphereLight(0xfff8e7,0x222233,0.6);
+    scene.add(hemi);
+    const key = new THREE.DirectionalLight(0xffffff,1.2);
+    key.position.set(-5,8,5); key.castShadow = true; key.shadow.radius = 6;
+    key.shadow.mapSize.set(2048,2048);
+    key.shadow.camera.left=-30;key.shadow.camera.right=30;key.shadow.camera.top=30;key.shadow.camera.bottom=-30;
+    scene.add(key);
+    const fill = new THREE.DirectionalLight(0x88aaff,0.25); fill.position.set(5,3,-3); scene.add(fill);
+
+    // chão com material PBR impressionante (procedural)
+    const groundGeo = new THREE.PlaneGeometry(400,400, 128,128);
+    const groundMat = new THREE.MeshStandardMaterial({color:0x181820, metalness:0.05, roughness:0.6});
+    const ground = new THREE.Mesh(groundGeo, groundMat);
+    ground.rotation.x = -Math.PI/2; ground.receiveShadow = true; scene.add(ground);
+
+    // Cubes estilizados para cenário
+    const boxGeo = new THREE.BoxGeometry(2,2,2);
+    for(let i=0;i<18;i++){
+      const mat = new THREE.MeshStandardMaterial({color:new THREE.Color().setHSL(0.6 + Math.random()*0.2, 0.6, 0.2 + Math.random()*0.25), metalness:0.1+Math.random()*0.4, roughness:0.2+Math.random()*0.5});
+      const m = new THREE.Mesh(boxGeo, mat);
+      m.position.set((Math.random()-0.5)*80,1,(Math.random()-0.5)*80);
+      m.castShadow = true; m.receiveShadow = true;
+      m.scale.set(1,1+Math.random()*2,1);
+      scene.add(m);
+    }
+
+    // arma estilizada (mesh simples ligado à câmera)
+    const weapon = new THREE.Group();
+    const wGeom = new THREE.BoxGeometry(0.08,0.08,0.6);
+    const wMat = new THREE.MeshStandardMaterial({color:0x0a0a0a, metalness:0.6, roughness:0.3});
+    const wBarrel = new THREE.Mesh(wGeom, wMat);
+    wBarrel.position.set(0.25,-0.25,-0.6);
+    weapon.add(wBarrel);
+    weapon.position.set(0.4,-0.45,-0.8);
+    camera.add(weapon);
+    scene.add(camera);
+
+    // pós-processamento: bloom + smaa
+    const composer = new EffectComposer(renderer);
+    const renderPass = new RenderPass(scene, camera); composer.addPass(renderPass);
+    const bloomPass = new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), 0.8, 0.6, 0.08); bloomPass.threshold = 0.2; bloomPass.strength = 0.9; bloomPass.radius = 0.4; composer.addPass(bloomPass);
+    const smaaPass = new SMAAPass(innerWidth*renderer.getPixelRatio(), innerHeight*renderer.getPixelRatio()); composer.addPass(smaaPass);
+
+    // inimigos — modelos simples, mas com material bonito
+    const enemies = [];
+    const enemyGeo = new THREE.CapsuleGeometry(0.4, 0.9, 4, 8);
+    const enemyMat = new THREE.MeshStandardMaterial({color:0xff6b6b, metalness:0.1, roughness:0.4});
+
+    function spawnEnemy(){
+      const e = new THREE.Mesh(enemyGeo, enemyMat.clone());
+      const angle = Math.random()*Math.PI*2; const dist = 25 + Math.random()*20;
+      e.position.set(Math.cos(angle)*dist,0.9,Math.sin(angle)*dist);
+      e.castShadow = true; e.receiveShadow = true; e.userData = {health:5};
+      scene.add(e); enemies.push(e); updateHUD();
+    }
+
+    // balas com partículas de brilho
+    const bullets = [];
+    const bulletGeo = new THREE.SphereGeometry(0.06,8,8);
+    const bulletMat = new THREE.MeshStandardMaterial({emissive:0xfff8a6, emissiveIntensity:2, metalness:0.1, roughness:0.3});
+
+    function shoot(){
+      if(!controlsEnabled) return;
+      const b = new THREE.Mesh(bulletGeo, bulletMat.clone());
+      const dir = new THREE.Vector3(); camera.getWorldDirection(dir);
+      b.position.copy(camera.position).add(dir.clone().multiplyScalar(0.8));
+      b.userData.velocity = dir.clone().multiplyScalar(55 + Math.random()*12);
+      b.castShadow = false; scene.add(b); bullets.push(b);
+      // recoil
+      weapon.position.y -= 0.02; setTimeout(()=>weapon.position.y += 0.02, 80);
+      try{ navigator.vibrate && navigator.vibrate(10); }catch(e){}
+    }
+
+    // HUD elements
+    const healthEl = document.getElementById('health'); const enemiesEl = document.getElementById('enemies'); const fpsEl = document.getElementById('fps');
+    let playerHealth = 100; function updateHUD(){ enemiesEl.textContent = enemies.length; healthEl.textContent = Math.max(0,Math.floor(playerHealth)); }
+
+    // controle por toque
+    const leftCanvas = document.getElementById('left-joystick'); leftCanvas.width = 130; leftCanvas.height = 130; const lctx = leftCanvas.getContext('2d');
+    let joystickState = {active:false, x:65, y:65, dx:0, dy:0};
+
+    function drawJoystick(){ lctx.clearRect(0,0,leftCanvas.width,leftCanvas.height); lctx.fillStyle = 'rgba(255,255,255,0.06)'; lctx.beginPath(); lctx.arc(65,65,56,0,Math.PI*2); lctx.fill(); lctx.fillStyle='rgba(255,255,255,0.12)'; lctx.beginPath(); lctx.arc(joystickState.x,joystickState.y,28,0,Math.PI*2); lctx.fill(); }
+    drawJoystick();
+
+    leftCanvas.addEventListener('touchstart', (e)=>{ e.preventDefault(); joystickState.active = true; const t = e.touches[0]; const r = leftCanvas.getBoundingClientRect(); joystickState.x = t.clientX - r.left; joystickState.y = t.clientY - r.top; }, {passive:false});
+    leftCanvas.addEventListener('touchmove', (e)=>{ e.preventDefault(); const t = e.touches[0]; const r = leftCanvas.getBoundingClientRect(); let nx = t.clientX - r.left; let ny = t.clientY - r.top; const dx = nx - 65, dy = ny - 65; const d = Math.sqrt(dx*dx+dy*dy); const max = 40; if(d>max){ nx = 65 + dx/d*max; ny = 65 + dy/d*max; } joystickState.x = nx; joystickState.y = ny; joystickState.dx = (joystickState.x-65)/40; joystickState.dy = (joystickState.y-65)/40; drawJoystick(); }, {passive:false});
+    leftCanvas.addEventListener('touchend', (e)=>{ joystickState.active=false; joystickState.x=65; joystickState.y=65; joystickState.dx=0; joystickState.dy=0; drawJoystick(); }, {passive:false});
+
+    // botão de tiro
+    const shootBtn = document.getElementById('shoot-btn'); let shooting = false; let shootInterval = null; shootBtn.addEventListener('touchstart',(e)=>{ e.preventDefault(); shooting = true; shoot(); shootInterval = setInterval(shoot,110); }, {passive:false});
+    shootBtn.addEventListener('touchend',(e)=>{ e.preventDefault(); shooting = false; clearInterval(shootInterval); }, {passive:false});
+
+    // controle de olhar: arrastar na metade direita
+    let lookActive = false; let lastTouch = null; let yaw = 0, pitch = 0; const sensitivity = 0.0022;
+    function onTouchStart(e){ if(e.touches.length===1){ const t = e.touches[0]; if(t.clientX > innerWidth*0.45){ lookActive = true; lastTouch = {x:t.clientX,y:t.clientY}; } } }
+    function onTouchMove(e){ if(lookActive && e.touches.length===1){ const t = e.touches[0]; const dx = t.clientX - lastTouch.x; const dy = t.clientY - lastTouch.y; yaw -= dx * sensitivity; pitch -= dy * sensitivity; pitch = Math.max(-Math.PI/2 + 0.1, Math.min(Math.PI/2 - 0.1, pitch)); camera.rotation.set(pitch, yaw, 0); lastTouch = {x:t.clientX,y:t.clientY}; } }
+    function onTouchEnd(e){ lookActive = false; lastTouch = null; }
+    document.addEventListener('touchstart', onTouchStart, {passive:true}); document.addEventListener('touchmove', onTouchMove, {passive:true}); document.addEventListener('touchend', onTouchEnd, {passive:true});
+
+    // mover o jogador com base no joystick
+    let controlsEnabled = false;
+    const player = {position:new THREE.Vector3(0,1.75,0), velocity:new THREE.Vector3()};
+
+    // colisões e física simples
+    function checkCollisions(delta){
+      // balas
+      for(let i=bullets.length-1;i>=0;i--){ const b = bullets[i]; b.position.addScaledVector(b.userData.velocity, delta); if(b.position.length()>400){ scene.remove(b); bullets.splice(i,1); continue; } for(let j=enemies.length-1;j>=0;j--){ const en = enemies[j]; if(b.position.distanceTo(en.position) < 0.6){ en.userData.health -= 2; scene.remove(b); bullets.splice(i,1); if(en.userData.health <= 0){ scene.remove(en); enemies.splice(j,1); updateHUD(); } break; } } }
+      // enemies vs player
+      for(let i=enemies.length-1;i>=0;i--){ const en = enemies[i]; const dir = new THREE.Vector3().subVectors(player.position, en.position); const dist = dir.length(); dir.normalize(); en.position.addScaledVector(dir, Math.min(3*delta, dist)); if(dist < 1.4){ playerHealth -= 14*delta; if(playerHealth <= 0){ playerHealth = 0; controlsEnabled = false; overlay.style.display='flex'; overlay.querySelector('.panel').textContent = 'Você morreu. Recarregue para tentar novamente.'; } updateHUD(); } }
+    }
+
+    // spawn contínuo adaptado para mobile
+    let spawnTimer = 0; function mobileSpawn(delta){ spawnTimer += delta; if(spawnTimer > 2.2){ spawnEnemy(); spawnTimer = 0; } }
+
+    // animação
+    const clock = new THREE.Clock(); let lastTime = performance.now(); let frames=0, accTime=0;
+    function animate(){ const delta = clock.getDelta(); const t = performance.now(); frames++; accTime += delta; if(accTime > 1.0){ fpsEl.textContent = Math.round(frames/accTime); frames=0; accTime=0; }
+      // aplicar joystick ao player
+      if(controlsEnabled){ const forward = -joystickState.dy; const strafe = joystickState.dx; const speed = 3.6; const dir = new THREE.Vector3(); camera.getWorldDirection(dir); dir.y = 0; dir.normalize(); const right = new THREE.Vector3().crossVectors(new THREE.Vector3(0,1,0), dir).normalize(); player.velocity.set(0,0,0); player.velocity.addScaledVector(dir, forward*speed); player.velocity.addScaledVector(right, strafe*speed); player.position.addScaledVector(player.velocity, delta);
+        // suaviza câmera segue player
+        camera.position.lerp(new THREE.Vector3(player.position.x, player.position.y, player.position.z), 0.2);
+      }
+
+      checkCollisions(delta); mobileSpawn(delta);
+
+      // suaviza arma
+      weapon.rotation.x += ( (joystickState.dx*0.2) - weapon.rotation.x) * 6 * delta;
+
+      composer.render(delta);
+      requestAnimationFrame(animate);
+    }
+
+    // responsividade
+    window.addEventListener('resize', ()=>{ camera.aspect = innerWidth/innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); composer.setSize(innerWidth, innerHeight); });
+
+    // iniciar / habilitar controles
+    const startBtn = document.getElementById('startBtn'); const overlay = document.getElementById('overlay'); startBtn.addEventListener('click', ()=>{ controlsEnabled = true; overlay.style.display='none'; startBtn.style.display='none'; });
+    // também habilitar ao tocar na tela
+    document.addEventListener('touchstart', ()=>{ if(!controlsEnabled){ controlsEnabled = true; overlay.style.display='none'; startBtn.style.display='none'; } }, {passive:true});
+
+    // spawn inicial
+    for(let i=0;i<3;i++) spawnEnemy(); updateHUD(); animate();
+
+    // permitir spawn manual (debug) — escondido em mobile, ainda útil ao testar
+    window.addEventListener('keydown', (e)=>{ if(e.code==='KeyP') spawnEnemy(); });
+
+  </script>
+</body>
+</html>
