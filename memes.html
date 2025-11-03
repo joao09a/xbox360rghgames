@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Pac-Battle - Nordeste Edition</title>
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;overflow:hidden;font-family:Arial,sans-serif;background:#000;color:#fff}
+#lobby{
+  background:url('https://i.postimg.cc/NGxdKPfq/images-4.jpg') no-repeat center center/cover;
+  position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-shadow:2px 2px 4px #000;transition:opacity .8s ease
+}
+h1{font-size:2.2rem;margin-bottom:18px}
+.characters{display:flex;gap:18px;flex-wrap:wrap;justify-content:center;margin-bottom:22px}
+.character{
+  background:rgba(0,0,0,.55);border:3px solid transparent;border-radius:10px;text-align:center;width:128px;padding:10px;transition:.18s;cursor:pointer
+}
+.character img{width:92px;height:92px;object-fit:contain}
+.character:hover{transform:scale(1.05)}
+.character.selected{border-color:#00ff88;box-shadow:0 0 14px #00ff88}
+#startBtn{background:#00ff88;color:#000;font-weight:700;padding:10px 20px;border:0;border-radius:10px;font-size:1.05rem;opacity:.75;pointer-events:none;cursor:pointer}
+#startBtn.enabled{opacity:1;pointer-events:auto}
+#gameContainer{opacity:0;pointer-events:none;transition:opacity .8s ease;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh}
+canvas{background:#111;border:2px solid #666;margin-top:10px;max-width:90vw;max-height:70vh}
+.controls{display:flex;justify-content:space-between;align-items:center;width:90%;max-width:600px;margin-top:10px}
+.dpad{display:grid;grid-template-columns:60px 60px 60px;grid-template-rows:60px 60px 60px;gap:10px}
+.btn{background:#222;border:2px solid #666;border-radius:10px;display:flex;justify-content:center;align-items:center;font-size:22px;color:#fff;user-select:none;touch-action:manipulation}
+.btn:active{background:#555}
+.actions{display:grid;grid-template-columns:80px 80px;grid-template-rows:80px 80px;gap:15px}
+.action-btn{width:70px;height:70px;border-radius:50%;display:flex;justify-content:center;align-items:center;background:#444;user-select:none;color:#fff;font-size:26px;touch-action:manipulation}
+.action-btn:active{opacity:.7}
+.red{background:#c62828}.blue{background:#1565c0}.green{background:#2e7d32}.yellow{background:#f9a825}
+#enableSound{position:fixed;right:14px;bottom:14px;background:rgba(0,0,0,.7);color:#fff;border:2px solid #00ff88;padding:8px 12px;border-radius:8px;cursor:pointer;display:none;z-index:9999;font-weight:bold}
+
+/* Engrenagem */
+#settings{position:fixed;top:12px;right:12px;z-index:10000}
+#gear{background:rgba(0,0,0,.7);border:2px solid #00ff88;border-radius:50%;color:#00ff88;font-size:24px;padding:8px;cursor:pointer;transition:.25s}
+#gear:hover{transform:rotate(30deg)}
+#volumeControl{position:absolute;top:46px;right:0;background:rgba(0,0,0,.88);border:2px solid #00ff88;border-radius:10px;padding:8px 12px;display:none;flex-direction:column;align-items:center;gap:8px}
+#volumeControl label{font-size:.9rem;color:#00ff88}
+#volumeControl input[type=range]{width:130px}
+#volumeControl select{background:black;color:#00ff88;border:2px solid #00ff88;border-radius:5px;padding:2px 6px;width:160px;text-align:center}
+#volumeControl button{margin-top:6px;padding:4px 8px;border:2px solid #00ff88;background:black;color:#00ff88;border-radius:5px;cursor:pointer}
+</style>
+</head>
+<body>
+
+<!-- Engrenagem -->
+<div id="settings">
+  <div id="gear" title="Configurações">⚙️</div>
+  <div id="volumeControl" aria-hidden="true">
+    <label>Volume Música</label>
+    <input id="volumeSlider" type="range" min="0" max="1" step="0.05" value="0.40" />
+    <label>Música:</label>
+    <select id="bgmSelect">
+      <option value="https://files.catbox.moe/g704kn.mp3">Feet Dona Fail Me Now – Reggae</option>
+      <option value="https://files.catbox.moe/1enxae.mp3">Drama Negro – Racionais</option>
+      <option value="https://files.catbox.moe/sv8jf0.mp3">Lili – Edson Gomes</option>
+      <option value="https://files.catbox.moe/iuto3d.mp3">Etiópia – Edson Gomes</option>
+    </select>
+    <button id="downloadBgm">Baixar Música</button>
+  </div>
+</div>
+
+<!-- LOBBY -->
+<div id="lobby">
+  <h1>Escolha seu Personagem</h1>
+  <div class="characters">
+    <div class="character" data-name="Super Xandão" data-img="https://i.postimg.cc/vT5Xh35C/images-1-removebg-preview.png"><img src="https://i.postimg.cc/vT5Xh35C/images-1-removebg-preview.png"><br>Super Xandão</div>
+    <div class="character" data-name="Cariani" data-img="https://i.postimg.cc/9QyVTh4P/images-3-removebg-preview.png"><img src="https://i.postimg.cc/9QyVTh4P/images-3-removebg-preview.png"><br>Cariani</div>
+    <div class="character" data-name="Julião" data-img="https://i.postimg.cc/63fyhZyR/images-2-removebg-preview.png"><img src="https://i.postimg.cc/63fyhZyR/images-2-removebg-preview.png"><br>Julião</div>
+    <div class="character" data-name="Bluezão" data-img="https://i.postimg.cc/mg1W4G3d/images-removebg-preview.png"><img src="https://i.postimg.cc/mg1W4G3d/images-removebg-preview.png"><br>Bluezão</div>
+    <div class="character" data-name="Lavine Smith" data-img="https://i.postimg.cc/KvV2kYJ5/Screenshot-20251025-115410-Instagram-removebg-preview.png"><img src="https://i.postimg.cc/KvV2kYJ5/Screenshot-20251025-115410-Instagram-removebg-preview.png"><br>Lavine Smith</div>
+  </div>
+  <button id="startBtn">Começar Jogo</button>
+  <audio id="bgm" loop preload="auto">
+    <source src="https://files.catbox.moe/g704kn.mp3" type="audio/mp3">
+  </audio>
+</div>
+
+<!-- JOGO -->
+<div id="gameContainer">
+  <canvas id="gameCanvas" width="300" height="300"></canvas>
+  <div class="controls">
+    <div class="dpad">
+      <div></div>
+      <div class="btn" onclick="move('up')">▲</div>
+      <div></div>
+      <div class="btn" onclick="move('left')">◀</div>
+      <div></div>
+      <div class="btn" onclick="move('right')">▶</div>
+      <div></div>
+      <div class="btn" onclick="move('down')">▼</div>
+      <div></div>
+    </div>
+    <div class="actions">
+      <div class="action-btn red" onclick="shoot()">⭕</div>
+      <div class="action-btn blue">❌</div>
+      <div class="action-btn green">🔺</div>
+      <div class="action-btn yellow">🟥</div>
+    </div>
+  </div>
+</div>
+
+<button id="enableSound">Ativar som</button>
+
+<script>
+const characterVoices = {
+  "Super Xandão":["https://files.catbox.moe/fxhq44.mp3","https://files.catbox.moe/86ba44.mp3","https://files.catbox.moe/3q6cox.mp3"],
+  "Cariani":["https://files.catbox.moe/rmqbq7.mp3","https://files.catbox.moe/u4ok23.mp3","https://files.catbox.moe/kz5nyl.mp3","https://files.catbox.moe/ua52u7.mp3"],
+  "Julião":["https://files.catbox.moe/3dog8.mp3","https://files.catbox.moe/c10chd.mp3","https://files.catbox.moe/7zdowq.mp3"],
+  "Bluezão":["https://files.catbox.moe/5rfeuc.mp3","https://files.catbox.moe/31si1c.mp3","https://files.catbox.moe/3rlglz.mp3"],
+  "Lavine Smith":["https://files.catbox.moe/fl7nhy.mp3","https://files.catbox.moe/sgj7zg.mp3","https://files.catbox.moe/dsetah.mp3"]
+};
+
+let currentCharacterAudio = null;
+let lastPlayedIndex = {};
+
+const bgm=document.getElementById('bgm');
+const enableSoundBtn=document.getElementById('enableSound');
+const gear=document.getElementById('gear');
+const volumeControl=document.getElementById('volumeControl');
+const volumeSlider=document.getElementById('volumeSlider');
+const bgmSelect=document.getElementById('bgmSelect');
+const downloadBgm=document.getElementById('downloadBgm');
+const startBtn=document.getElementById('startBtn');
+
+gear.addEventListener('click',()=>{
+  const isOpen = volumeControl.style.display === 'flex';
+  volumeControl.style.display = isOpen ? 'none' : 'flex';
+  volumeControl.setAttribute('aria-hidden', isOpen ? 'true':'false');
+});
+volumeSlider.addEventListener('input',()=>{ bgm.volume=parseFloat(volumeSlider.value); });
+bgmSelect.addEventListener('change',()=>{
+  const url = bgmSelect.value;
+  try{ bgm.pause(); bgm.currentTime=0; } catch(e){}
+  bgm.querySelector('source').src = url;
+  bgm.load();
+  bgm.play().catch(()=>{});
+});
+downloadBgm.addEventListener('click',()=>{
+  const a=document.createElement('a');
+  a.href=bgmSelect.value;
+  a.download='musica_fundo.mp3';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+});
+
+function tryPlayBgm(){
+  bgm.volume=parseFloat(volumeSlider.value);
+  const p=bgm.play();
+  if(p!==undefined) p.catch(()=>enableSoundBtn.style.display='block');
+}
+document.addEventListener('click',()=>tryPlayBgm(),{once:true});
+enableSoundBtn.addEventListener('click',()=>tryPlayBgm());
+
+function pickNonRepeatingIndex(name, arrLength){
+  if(arrLength===0) return -1;
+  if(arrLength===1) return 0;
+  const last=lastPlayedIndex[name];
+  let idx;
+  do{ idx=Math.floor(Math.random()*arrLength); }while(arrLength>1 && idx===last);
+  lastPlayedIndex[name]=idx;
+  return idx;
+}
+
+let selectedCharacter = null;
+
+document.querySelectorAll('.character').forEach(el=>{
+  el.addEventListener('click',()=>{
+    document.querySelectorAll('.character').forEach(x=>x.classList.remove('selected'));
+    el.classList.add('selected');
+    startBtn.classList.add('enabled');
+    selectedCharacter = el.dataset.img;
+
+    // parar áudio anterior
+    if(currentCharacterAudio){
+      try{currentCharacterAudio.pause();}catch(e){}
+      try{currentCharacterAudio.currentTime=0;}catch(e){}
+      currentCharacterAudio=null;
+    }
+
+    // tocar fala aleatória
+    const name = el.dataset.name;
+    const voices = characterVoices[name] || [];
+    const idx = pickNonRepeatingIndex(name, voices.length);
+    if(idx>=0){
+      currentCharacterAudio = new Audio(voices[idx]);
+      currentCharacterAudio.volume = 0.6; // volume fixo
+      currentCharacterAudio.play().catch(()=>{});
+    }
+  });
+});
+
+startBtn.addEventListener('click',()=>{
+  if(!selectedCharacter) return;
+  document.getElementById('lobby').style.opacity=0;
+  setTimeout(()=>{
+    document.getElementById('lobby').style.display='none';
+    try{bgm.pause();bgm.currentTime=0;}catch(e){}
+    const game=document.getElementById('gameContainer');
+    game.style.opacity=1;game.style.pointerEvents='auto';
+    startPacBattle(selectedCharacter);
+  },800);
+});
+
+/* --- PAC-BATTLE --- */
+function startPacBattle(characterImg){
+  const canvas=document.getElementById("gameCanvas");
+  const ctx=canvas.getContext("2d");
+  const charImage=new Image();
+  charImage.src=characterImg;
+
+  const shootSound = new Audio("https://files.catbox.moe/qeudhy.mp3");
+  shootSound.volume = 0.3;
+
+  let pacman={x:30,y:30,size:12,dir:'right',speed:2};
+  let bullets=[];
+  let barriers=[
+    {x:0,y:0,width:300,height:10},{x:0,y:0,width:10,height:300},
+    {x:0,y:290,width:300,height:10},{x:290,y:0,width:10,height:300},
+    {x:50,y:50,width:200,height:10},{x:50,y:50,width:10,height:80},
+    {x:50,y:120,width:100,height:10},{x:140,y:50,width:10,height:80},
+    {x:140,y:120,width:100,height:10},{x:230,y:50,width:10,height:80},
+    {x:90,y:160,width:120,height:10},{x:90,y:160,width:10,height:100},
+    {x:200,y:160,width:10,height:100},{x:90,y:250,width:120,height:10}
+  ];
+
+  function drawBarriers(){ctx.fillStyle="red";barriers.forEach(b=>ctx.fillRect(b.x,b.y,b.width,b.height));}
+  function drawPacman(){ctx.drawImage(charImage,pacman.x-pacman.size,pacman.y-pacman.size,pacman.size*2,pacman.size*2);}
+  function checkCollision(x,y){for(let b of barriers) if(x+pacman.size>b.x&&x-pacman.size<b.x+b.width&&y+pacman.size>b.y&&y-pacman.size<b.y+b.height) return true; return false;}
+
+  function shoot(){
+    let offsetX=0,offsetY=0; const muzzleOffset=pacman.size*1.2;
+    switch(pacman.dir){case'right':offsetX=muzzleOffset;break;case'left':offsetX=-muzzleOffset;break;case'up':offsetY=-muzzleOffset;break;case'down':offsetY=muzzleOffset;break;}
+    bullets.push({x:pacman.x+offsetX,y:pacman.y+offsetY,dir:pacman.dir,speed:5,size:4});
+    const soundClone=shootSound.cloneNode(); soundClone.volume=0.3; soundClone.play().catch(()=>{});
+  }
+
+  function updateBullets(){
+    for(let i=bullets.length-1;i>=0;i--){
+      let b=bullets[i];
+      if(b.dir==='up')b.y-=b.speed;if(b.dir==='down')b.y+=b.speed;if(b.dir==='left')b.x-=b.speed;if(b.dir==='right')b.x+=b.speed;
+      if(checkCollision(b.x,b.y)||b.x<0||b.x>canvas.width||b.y<0||b.y>canvas.height){bullets.splice(i,1);continue;}
+      ctx.fillStyle="cyan";ctx.beginPath();ctx.arc(b.x,b.y,b.size,0,2*Math.PI);ctx.fill();
+    }
+  }
+
+  function update(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    let nextX=pacman.x,nextY=pacman.y;
+    if(pacman.dir==='up')nextY-=pacman.speed;
+    if(pacman.dir==='down')nextY+=pacman.speed;
+    if(pacman.dir==='left')nextX-=pacman.speed;
+    if(pacman.dir==='right')nextX+=pacman.speed;
+    if(!checkCollision(nextX,nextY)){pacman.x=nextX;pacman.y=nextY;}
+    drawBarriers();drawPacman();updateBullets();
+  }
+
+  window.move=(d)=>pacman.dir=d;
+  window.shoot=shoot;
+  setInterval(update,20);
+}
+</script>
+</body>
+</html>
