@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Takemichi RGH</title>
+
+<style>
+:root{
+--verde:#00ff88;
+--amarelo:#ffd700;
+--cinza:#1a1a1a;
+}
+
+body{
+margin:0;
+font-family:Arial;
+background:#000;
+color:white;
+touch-action:manipulation;
+}
+
+body.travado{
+overflow:hidden;
+}
+
+.header{
+background:#000;
+padding:8px;
+text-align:center;
+}
+
+.banner{
+width:100%;
+max-width:750px;
+margin:auto;
+display:block;
+}
+
+.controls{
+text-align:center;
+padding:15px;
+}
+
+.controls input,
+.controls select,
+.controls button{
+padding:10px;
+margin:5px;
+border-radius:6px;
+border:none;
+}
+
+button:active{
+transform:scale(0.95);
+}
+
+.grid{
+display:grid;
+grid-template-columns:repeat(auto-fill,minmax(170px,1fr));
+gap:15px;
+padding:15px;
+align-items:stretch;
+}
+
+.card{
+background:#111;
+border-radius:12px;
+overflow:hidden;
+position:relative;
+transition:0.2s;
+display:flex;
+flex-direction:column;
+justify-content:space-between;
+height:100%;
+cursor:pointer;
+}
+
+.card.active{
+box-shadow:0 0 20px #00ff88;
+transform:scale(1.03);
+}
+
+.card:hover{
+transform:scale(1.05);
+}
+
+.card:active{
+transform:scale(0.97);
+}
+
+.card img{
+width:100%;
+aspect-ratio:3/4;
+object-fit:cover;
+}
+
+.card-content{
+padding:10px;
+display:flex;
+flex-direction:column;
+justify-content:space-between;
+flex-grow:1;
+}
+
+.nome{
+color:var(--amarelo);
+font-weight:bold;
+}
+
+.fav{
+position:absolute;
+top:8px;
+right:8px;
+font-size:22px;
+cursor:pointer;
+z-index:2;
+}
+
+.btn{
+display:block;
+width:100%;
+margin-top:8px;
+background:linear-gradient(90deg,var(--verde),var(--amarelo));
+border:none;
+padding:8px;
+border-radius:6px;
+cursor:pointer;
+font-weight:bold;
+}
+
+#modal{
+display:none;
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,0.95);
+align-items:center;
+justify-content:center;
+z-index:1000;
+animation:fadeIn 0.2s;
+}
+
+@keyframes fadeIn{
+from{opacity:0}
+to{opacity:1}
+}
+
+.modal-box{
+width:90%;
+max-width:420px;
+background:#111;
+border-radius:12px;
+overflow:hidden;
+animation:zoom 0.2s;
+display:flex;
+flex-direction:column;
+max-height:90vh;
+align-items:center;
+padding:10px;
+}
+
+@keyframes zoom{
+from{transform:scale(0.8)}
+to{transform:scale(1)}
+}
+
+.modal-box img{
+width:120px;
+height:160px;
+object-fit:cover;
+border-radius:8px;
+margin-top:10px;
+cursor:pointer;
+transition:0.2s;
+}
+
+.modal-box img.active{
+box-shadow:0 0 20px #00ff88;
+transform:scale(1.05);
+}
+
+.modal-content{
+padding:10px;
+display:flex;
+flex-direction:column;
+gap:10px;
+width:100%;
+}
+
+.modal-content h2{
+color:#ffd700;
+margin:0;
+text-align:center;
+}
+
+.modal-desc{
+max-height:140px;
+overflow-y:auto;
+font-size:14px;
+line-height:1.4;
+padding-right:5px;
+}
+
+.modal-buttons{
+margin-top:10px;
+display:flex;
+gap:10px;
+}
+
+#modal-link{
+flex:1;
+background:linear-gradient(90deg,#00ff88,#ffd700);
+padding:10px;
+text-align:center;
+border-radius:6px;
+text-decoration:none;
+color:black;
+font-weight:bold;
+}
+
+.fechar{
+background:#333;
+border:none;
+padding:10px;
+border-radius:6px;
+color:white;
+cursor:pointer;
+}
+
+/* NOTIFICAÇÕES */
+
+#notificacoes{
+position:fixed;
+bottom:20px;
+right:15px;
+display:flex;
+flex-direction:column;
+gap:10px;
+z-index:9999;
+}
+
+.notif{
+width:260px;
+background:#111;
+border-radius:10px;
+padding:10px;
+box-shadow:0 0 10px rgba(0,255,136,0.3);
+position:relative;
+overflow:hidden;
+animation:slideIn 0.3s;
+}
+
+@keyframes slideIn{
+from{transform:translateX(100%);opacity:0}
+to{transform:translateX(0);opacity:1}
+}
+
+.notif-title{
+font-size:12px;
+opacity:0.6;
+}
+
+.notif-text{
+margin-top:5px;
+font-size:14px;
+}
+
+.bar{
+position:absolute;
+bottom:0;
+left:0;
+height:3px;
+background:#00ff88;
+animation:progress 3s linear forwards;
+}
+
+@keyframes progress{
+from{width:100%}
+to{width:0%}
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+<img src="https://i.postimg.cc/qqPZc7pB/banner.png" class="banner">
+</div>
+
+<div class="controls">
+<input type="text" id="search" placeholder="Buscar jogo...">
+<select id="categoria">
+<option value="all">Todas categorias</option>
+<option value="acao">Ação</option>
+<option value="aventura">Aventura</option>
+<option value="corrida">Corrida</option>
+<option value="fps">FPS</option>
+</select>
+<button onclick="verFavoritos()">⭐ Favoritos</button>
+<button onclick="mostrarTodos()">🎮 Todos</button>
+</div>
+
+<div class="grid" id="grid"></div>
+
+<div id="modal">
+<div class="modal-box">
+<img id="modal-img" onclick="toggleGlowModal()">
+<div class="modal-content">
+<h2 id="modal-nome"></h2>
+<div><strong>Descrição:</strong></div>
+<div class="modal-desc" id="modal-desc"></div>
+<div>📦 <span id="modal-tamanho"></span></div>
+<div>💿 <span id="modal-formato"></span></div>
+<div class="modal-buttons">
+<a id="modal-link" target="_blank">⬇ Download</a>
+<button class="fechar" onclick="fecharModal()">Fechar</button>
+</div>
+</div>
+</div>
+</div>
+
+<!-- CONTAINER DE NOTIFICAÇÕES -->
+<div id="notificacoes"></div>
+
+<script>
+
+function criarNotif(texto){
+const container=document.getElementById("notificacoes")
+
+const notif=document.createElement("div")
+notif.className="notif"
+
+notif.innerHTML=`
+<div class="notif-title">Sistema</div>
+<div class="notif-text">${texto}</div>
+<div class="bar"></div>
+`
+
+container.appendChild(notif)
+
+setTimeout(()=>{
+notif.remove()
+},3000)
+}
+
+let lastTouchEnd=0
+document.addEventListener('touchend',function(e){
+let now=new Date().getTime()
+if(now-lastTouchEnd<=300){e.preventDefault()}
+lastTouchEnd=now
+},false)
+
+let descGrande = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. ".repeat(20)
+
+let jogos=[
+
+{nome:"GTA V",categoria:"acao",tamanho:"16 GB",formato:"GOD",descricao:descGrande,imagem:"https://images.igdb.com/igdb/image/upload/t_cover_big/co1tmu.jpg",link:"#"},
+{nome:"Red Dead Redemption",categoria:"aventura",tamanho:"7 GB",formato:"GOD",descricao:descGrande,imagem:"https://images.igdb.com/igdb/image/upload/t_cover_big/co1q1f.jpg",link:"#"},
+{nome:"Call of Duty Black Ops 2",categoria:"fps",tamanho:"8 GB",formato:"GOD",descricao:descGrande,imagem:"https://images.igdb.com/igdb/image/upload/t_cover_big/co2lbd.jpg",link:"#"},
+{nome:"Forza Horizon",categoria:"corrida",tamanho:"9 GB",formato:"GOD",descricao:descGrande,imagem:"https://images.igdb.com/igdb/image/upload/t_cover_big/co1x7y.jpg",link:"#"},
+{nome:"Minecraft",categoria:"aventura",tamanho:"1 GB",formato:"XBLA",descricao:descGrande,imagem:"https://images.igdb.com/igdb/image/upload/t_cover_big/co49x5.jpg",link:"#"},
+{nome:"Halo Reach",categoria:"fps",tamanho:"7 GB",formato:"GOD",descricao:descGrande,imagem:"https://images.igdb.com/igdb/image/upload/t_cover_big/co1x8h.jpg",link:"#"},
+{nome:"Assassin's Creed IV",categoria:"aventura",tamanho:"6 GB",formato:"GOD",descricao:descGrande,imagem:"https://images.igdb.com/igdb/image/upload/t_cover_big/co1rv3.jpg",link:"#"},
+{nome:"Need for Speed Most Wanted",categoria:"corrida",tamanho:"6 GB",formato:"GOD",descricao:descGrande,imagem:"https://images.igdb.com/igdb/image/upload/t_cover_big/co1x8w.jpg",link:"#"}
+]
+
+let favoritos=JSON.parse(localStorage.getItem("fav"))||[]
+let modo="todos"
+
+const grid=document.getElementById("grid")
+
+function mostrarJogos(lista){
+grid.innerHTML = lista.map(jogo=>{
+const fav = favoritos.includes(jogo.nome) ? "⭐" : "☆"
+const nomeSeguro = jogo.nome.replace(/'/g, "\\'")
+return `
+<div class="card" onclick="ativarCard(this)">
+<div class="fav" onclick="toggleFav(event,'${nomeSeguro}')">${fav}</div>
+<img loading="lazy" src="${jogo.imagem}">
+<div class="card-content">
+<div class="nome">${jogo.nome}</div>
+<div>📦 ${jogo.tamanho}</div>
+<div>💿 ${jogo.formato}</div>
+<button class="btn" onclick="event.stopPropagation();abrirModal('${nomeSeguro}')">Ver</button>
+</div>
+</div>`
+}).join("")
+}
+
+function ativarCard(el){
+document.querySelectorAll(".card.active").forEach(c=>c.classList.remove("active"))
+el.classList.add("active")
+}
+
+function toggleFav(event,nome){
+event.stopPropagation()
+
+if(favoritos.includes(nome)){
+favoritos=favoritos.filter(f=>f!==nome)
+criarNotif("Removido dos favoritos")
+}else{
+favoritos.push(nome)
+criarNotif("Adicionado aos favoritos")
+}
+
+localStorage.setItem("fav",JSON.stringify(favoritos))
+
+modo==="favoritos"
+?verFavoritos()
+:mostrarJogos(jogos)
+}
+
+function verFavoritos(){
+modo="favoritos"
+mostrarJogos(jogos.filter(j=>favoritos.includes(j.nome)))
+}
+
+function mostrarTodos(){
+modo="todos"
+mostrarJogos(jogos)
+}
+
+search.oninput=filtrar
+categoria.onchange=filtrar
+
+function filtrar(){
+modo="todos"
+const texto=search.value.toLowerCase()
+const cat=categoria.value
+mostrarJogos(jogos.filter(j=>{
+return j.nome.toLowerCase().includes(texto) && (cat==="all"||j.categoria===cat)
+}))
+}
+
+const modal=document.getElementById("modal")
+const modalImg=document.getElementById("modal-img")
+const modalNome=document.getElementById("modal-nome")
+const modalDesc=document.getElementById("modal-desc")
+const modalTamanho=document.getElementById("modal-tamanho")
+const modalFormato=document.getElementById("modal-formato")
+const modalLink=document.getElementById("modal-link")
+
+function abrirModal(nome){
+const jogo=jogos.find(j=>j.nome===nome)
+if(!jogo)return
+
+modal.style.display="flex"
+document.body.classList.add("travado")
+
+modalImg.src=jogo.imagem
+modalNome.innerText=jogo.nome
+modalDesc.innerText=jogo.descricao
+modalTamanho.innerText=jogo.tamanho
+modalFormato.innerText=jogo.formato
+modalLink.href=jogo.link
+
+modalImg.classList.remove("active")
+}
+
+function fecharModal(){
+modal.style.display="none"
+document.body.classList.remove("travado")
+}
+
+function toggleGlowModal(){
+modalImg.classList.toggle("active")
+}
+
+mostrarJogos(jogos)
+
+</script>
+
+</body>
+</html>
